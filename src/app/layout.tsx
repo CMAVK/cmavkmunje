@@ -73,7 +73,7 @@ export default function RootLayout({
     address: {
       "@type": "PostalAddress",
       streetAddress:
-        "Office No. 2401, 24th Floor, Business Park, Near Bramha Suncity, New Kalyani Nagar, Wadgaon Sheri",
+        "Shop 2401, 24th Floor, Business Park, New Kalyani Nagar, Wadgaon Sheri",
       addressLocality: "Pune",
       postalCode: "411014",
       addressRegion: "Maharashtra",

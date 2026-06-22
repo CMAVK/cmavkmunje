@@ -1,8 +1,8 @@
 // Central data for the whole site. Edit here to update content everywhere.
 
 export const site = {
-  name: "V K Munje & Company",
-  shortName: "VKM & Co.",
+  name: "V K MUNJE & COMPANY",
+  shortName: "VKM & CO.",
   profession: "Cost & Management Accountants",
   tagline: "Your Trusted Partner for Taxation, Compliance & Business Growth",
   established: "2019",
@@ -20,7 +20,7 @@ export const site = {
     phones: ["9922099970", "9657375713"],
     email: "cma.vickymunje@gmail.com",
     address:
-      "Office No. 2401, 24th Floor, Business Park, Near Bramha Suncity, New Kalyani Nagar, Wadgaon Sheri, Pune – 411014",
+      "Shop 2401, 24th Floor, Business Park, New Kalyani Nagar, Wadgaon Sheri, Pune – 411014",
     addressShort: "New Kalyani Nagar, Pune – 411014",
     mapsUrl: "https://maps.app.goo.gl/xBkpWCRgakxoJA8u8",
     hours: "Mon – Sat · 10:00 AM – 7:00 PM",
