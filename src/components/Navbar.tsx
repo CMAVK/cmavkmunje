@@ -11,22 +11,26 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-black/5 bg-cream/90 backdrop-blur supports-[backdrop-filter]:bg-cream/75">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3">
-        <Link href="/" className="flex items-center gap-3" onClick={() => setOpen(false)}>
+    <header className="sticky top-0 z-40 border-b border-black/5 bg-cream/90 backdrop-blur supports-[backdrop-filter]:bg-cream/75">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
+        <Link
+          href="/"
+          className="flex items-center gap-3"
+          onClick={() => setOpen(false)}
+        >
           <Logo className="h-11 w-11 shrink-0" />
           <span className="flex flex-col leading-tight">
-            <span className="font-display text-lg font-bold text-teal sm:text-xl">
+            <span className="font-display text-base font-bold text-teal sm:text-lg">
               {site.name}
             </span>
-            <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-gold">
+            <span className="text-[9px] font-medium uppercase tracking-[0.18em] text-gold sm:text-[10px]">
               {site.profession}
             </span>
           </span>
         </Link>
 
         {/* Desktop links */}
-        <ul className="hidden items-center gap-1 md:flex">
+        <ul className="hidden items-center gap-0.5 lg:flex">
           {nav.map((item) => {
             const active =
               item.href === "/"
@@ -36,7 +40,7 @@ export default function Navbar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-full px-3 py-2 text-sm font-medium transition-colors ${
                     active
                       ? "bg-teal text-white"
                       : "text-ink/80 hover:bg-teal/10 hover:text-teal"
@@ -50,9 +54,9 @@ export default function Navbar() {
           <li>
             <Link
               href="/contact"
-              className="ml-2 rounded-full bg-gold px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03]"
+              className="ml-1 rounded-full bg-gold px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03]"
             >
-              Get in touch
+              Book consultation
             </Link>
           </li>
         </ul>
@@ -63,9 +67,16 @@ export default function Navbar() {
           aria-label="Toggle menu"
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-teal md:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-lg text-teal lg:hidden"
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             {open ? (
               <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
             ) : (
@@ -77,8 +88,8 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {open && (
-        <div className="border-t border-black/5 bg-cream md:hidden">
-          <ul className="mx-auto flex max-w-6xl flex-col gap-1 px-5 py-3">
+        <div className="border-t border-black/5 bg-cream lg:hidden">
+          <ul className="mx-auto flex max-w-7xl flex-col gap-1 px-5 py-3">
             {nav.map((item) => (
               <li key={item.href}>
                 <Link
@@ -96,7 +107,7 @@ export default function Navbar() {
                 onClick={() => setOpen(false)}
                 className="mt-1 block rounded-lg bg-gold px-3 py-2.5 text-center text-sm font-semibold text-white"
               >
-                Get in touch
+                Book consultation
               </Link>
             </li>
           </ul>

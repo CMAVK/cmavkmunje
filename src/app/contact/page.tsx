@@ -63,6 +63,8 @@ export default function ContactPage() {
               </a>
             </ContactItem>
 
+            <ContactItem label="Working hours">{site.contact.hours}</ContactItem>
+
             <div className="flex flex-wrap gap-3 pt-2">
               <a
                 href={`https://wa.me/${waNumber}`}

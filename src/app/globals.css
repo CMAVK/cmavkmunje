@@ -7,12 +7,13 @@
   --color-gold: #c8932f;
   --color-gold-light: #e3b457;
   --color-gold-soft: #f3e4c4;
-  --color-cream: #faf8f3;
+  --color-cream: #fbf9f4;
+  --color-cream-deep: #f4efe3;
   --color-ink: #1a2422;
   --color-muted: #5b6b67;
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
-  --font-display: var(--font-playfair), Georgia, serif;
+  --font-display: var(--font-poppins), var(--font-inter), sans-serif;
 }
 
 :root {
@@ -25,7 +26,7 @@ html {
 }
 
 body {
-  background: var(--background);
+  background: var(--color-cream);
   color: var(--foreground);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -36,14 +37,21 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
-/* Subtle entrance animation */
+.accent-rule {
+  height: 3px;
+  width: 56px;
+  background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
+  border-radius: 999px;
+}
+
+/* Fade / slide entrance used by the Reveal component (no-JS fallback shows content) */
 @keyframes fade-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -55,10 +63,11 @@ h4 {
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-/* Thin gold rule used as a section accent */
-.accent-rule {
-  height: 3px;
-  width: 56px;
-  background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
-  border-radius: 999px;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-fade-up {
+    animation: none;
+  }
 }

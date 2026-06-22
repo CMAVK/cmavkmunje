@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { services, site } from "@/lib/site";
+import { serviceCategories, site } from "@/lib/site";
 
 // No backend required: composes a pre-filled email to the firm.
 // To switch to a hosted form later (e.g. Formspree), replace the
@@ -14,6 +14,7 @@ export default function ContactForm() {
     const form = e.currentTarget;
     const data = new FormData(form);
     const name = String(data.get("name") || "");
+    const company = String(data.get("company") || "");
     const phone = String(data.get("phone") || "");
     const service = String(data.get("service") || "");
     const message = String(data.get("message") || "");
@@ -21,6 +22,7 @@ export default function ContactForm() {
     const subject = `Enquiry: ${service || "General"} — ${name}`;
     const body = [
       `Name: ${name}`,
+      `Company: ${company}`,
       `Phone: ${phone}`,
       `Service: ${service}`,
       "",
@@ -61,13 +63,20 @@ export default function ContactForm() {
 
       <div>
         <label className="mb-1.5 block text-sm font-medium text-ink">
+          Company / business name <span className="text-muted">(optional)</span>
+        </label>
+        <input name="company" className={field} placeholder="Your company" />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-ink">
           Service needed
         </label>
         <select name="service" className={field} defaultValue="">
           <option value="" disabled>
             Select a service
           </option>
-          {services.map((s) => (
+          {serviceCategories.map((s) => (
             <option key={s.slug} value={s.title}>
               {s.title}
             </option>

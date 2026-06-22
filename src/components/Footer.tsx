@@ -1,11 +1,11 @@
 import Link from "next/link";
 import Logo from "./Logo";
-import { nav, services, site } from "@/lib/site";
+import { nav, serviceCategories, site } from "@/lib/site";
 
 export default function Footer() {
   return (
     <footer className="mt-auto bg-teal-dark text-cream/85">
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[1.4fr_1fr_1.2fr]">
+      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 md:grid-cols-[1.5fr_1fr_1fr_1.2fr]">
         {/* Brand */}
         <div>
           <div className="flex items-center gap-3">
@@ -19,15 +19,13 @@ export default function Footer() {
               </p>
             </div>
           </div>
-          <p className="mt-4 max-w-xs text-sm italic text-cream/70">
-            “{site.tagline}”
-          </p>
+          <p className="mt-4 max-w-xs text-sm text-cream/70">{site.tagline}</p>
           <p className="mt-3 text-xs text-cream/50">
-            Established {site.established}
+            Established {site.established} · Registered with ICMAI
           </p>
         </div>
 
-        {/* Quick links */}
+        {/* Explore */}
         <div>
           <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-gold-light">
             Explore
@@ -37,6 +35,22 @@ export default function Footer() {
               <li key={item.href}>
                 <Link href={item.href} className="hover:text-white">
                   {item.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Services */}
+        <div>
+          <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-gold-light">
+            Services
+          </h3>
+          <ul className="mt-4 space-y-2 text-sm">
+            {serviceCategories.slice(0, 7).map((s) => (
+              <li key={s.slug}>
+                <Link href={`/services#${s.slug}`} className="hover:text-white">
+                  {s.title}
                 </Link>
               </li>
             ))}
@@ -63,33 +77,34 @@ export default function Footer() {
               ))}
             </p>
             <p>
-              <a
-                href={`mailto:${site.contact.email}`}
-                className="hover:text-white"
-              >
+              <a href={`mailto:${site.contact.email}`} className="hover:text-white">
                 {site.contact.email}
               </a>
             </p>
-            <p>
-              <a
-                href={site.contact.mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gold-light hover:text-white"
-              >
-                View on Google Maps →
-              </a>
-            </p>
+            <p className="text-cream/60">{site.contact.hours}</p>
           </address>
         </div>
       </div>
 
+      {/* Authority statement */}
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-5 py-5 text-xs text-cream/50 sm:flex-row">
+        <div className="mx-auto max-w-7xl px-5 py-6 text-center text-xs leading-relaxed text-cream/55">
+          {site.name} is a professionally managed firm of Cost &amp; Management
+          Accountants providing GST, Income Tax, Cost Audit, Labour Law,
+          Corporate Compliance, Startup Advisory, Project Finance and Management
+          Consultancy services across India.
+        </div>
+      </div>
+
+      <div className="border-t border-white/10">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-5 py-5 text-xs text-cream/50 sm:flex-row">
           <p>
             © {new Date().getFullYear()} {site.name}. All rights reserved.
           </p>
-          <p>{site.founder.name} · {site.founder.credentials}</p>
+          <p>
+            {site.founder.name}, {site.founder.credentials} ·{" "}
+            {site.partner.name}, {site.partner.credentials}
+          </p>
         </div>
       </div>
     </footer>
