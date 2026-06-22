@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Calculators from "@/components/Calculators";
+import { disclaimer } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Financial Calculators",
@@ -28,10 +29,9 @@ export default function ToolsPage() {
 
       <section className="mx-auto max-w-5xl px-5 py-16">
         <Calculators />
-        <p className="mt-6 text-center text-xs text-muted">
+        <p className="mt-6 text-center text-xs leading-relaxed text-muted">
           These calculators provide indicative estimates only and do not
-          constitute professional advice. Tax laws change and individual facts
-          vary — please confirm with us before acting.
+          constitute professional advice. {disclaimer}
         </p>
 
         <div className="mt-12 rounded-2xl bg-teal p-8 text-center text-cream">

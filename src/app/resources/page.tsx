@@ -1,35 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Reveal from "@/components/Reveal";
-import { site, updates } from "@/lib/site";
+import { calendars, disclaimer, dueDates, lastReviewed, site, updates } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Resources & Compliance Calendar",
   description:
     "Compliance due dates for GST, TDS and ROC, plus practical updates from V K Munje & Company — Cost & Management Accountants, Pune.",
 };
-
-const dueDates = [
-  { date: "11th monthly", task: "GSTR-1 (monthly filers)", cat: "GST" },
-  { date: "20th monthly", task: "GSTR-3B & tax payment", cat: "GST" },
-  { date: "7th monthly", task: "TDS / TCS deposit", cat: "TDS" },
-  { date: "15 Jun / Sep / Dec / Mar", task: "Advance tax instalments", cat: "Income Tax" },
-  { date: "30th April", task: "PF / ESI annual returns review", cat: "Labour" },
-  { date: "30th May", task: "LLP Form 11 (annual return)", cat: "ROC" },
-  { date: "31st July", task: "ITR — non-audit cases", cat: "Income Tax" },
-  { date: "30th September", task: "DIR-3 KYC for directors", cat: "ROC" },
-  { date: "31st October", task: "ITR & tax audit — audit cases", cat: "Income Tax" },
-  { date: "30th October", task: "LLP Form 8 (accounts & solvency)", cat: "ROC" },
-  { date: "30th November", task: "Form MGT-7 / annual ROC filings", cat: "ROC" },
-  { date: "31st December", task: "GSTR-9 & 9C (annual)", cat: "GST" },
-];
-
-const calendars = [
-  "GST Compliance Calendar",
-  "Income Tax Calendar",
-  "ROC Compliance Calendar",
-  "Labour Law Compliance Calendar",
-];
 
 export default function ResourcesPage() {
   return (
@@ -59,6 +37,9 @@ export default function ResourcesPage() {
           <p className="mt-3 text-muted">
             Indicative recurring deadlines. Exact dates can shift with
             notifications — confirm with us before filing.
+          </p>
+          <p className="mt-2 text-xs font-medium uppercase tracking-wide text-gold">
+            Last reviewed: {lastReviewed}
           </p>
         </Reveal>
 
@@ -134,6 +115,15 @@ export default function ResourcesPage() {
             >
               Request a calendar
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Legal / freshness disclaimer */}
+      <section className="bg-cream">
+        <div className="mx-auto max-w-4xl px-5 pb-16">
+          <div className="rounded-2xl border border-gold/30 bg-gold-soft/40 p-6 text-center">
+            <p className="text-sm leading-relaxed text-ink/80">{disclaimer}</p>
           </div>
         </div>
       </section>

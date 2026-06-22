@@ -28,6 +28,12 @@ export const site = {
   url: "https://cmavkmunje.com",
 };
 
+// ── Maintenance: review these dated items whenever the law changes ──
+// Update `lastReviewed` after any review so the site shows an honest date.
+export const lastReviewed = "June 2026";
+
+export const disclaimer = `Tax rates, thresholds, due dates, forms and statutory provisions on this website (under the Income-tax Act 2025, the CGST/SGST Acts, the Companies Act 2013 and allied laws) are for general guidance and current as of ${lastReviewed}. Such laws, their amendments, rates and forms change frequently — please confirm the latest position with us before acting.`;
+
 export const nav: { label: string; href: string }[] = [
   { label: "Home", href: "/" },
   { label: "About", href: "/about" },
@@ -332,6 +338,29 @@ export const faqs: Faq[] = [
   { cat: "Labour Law", q: "What is a Shop & Establishment registration?", a: "A state registration required for most commercial establishments, often needed to open a current account and prove business existence." },
   { cat: "Labour Law", q: "We received a PF/ESIC notice — can you help?", a: "Yes. Our labour-law division handles assessments and notices under PF and ESI, prepares replies and represents you before the authorities." },
   { cat: "Labour Law", q: "What is CLRA / contract-labour compliance?", a: "The Contract Labour (Regulation & Abolition) Act requires licensing and registers where contract labour is engaged. We set up and maintain the required compliance." },
+];
+
+// Recurring statutory due dates — review/update when the law changes.
+export const dueDates = [
+  { date: "11th monthly", task: "GSTR-1 (monthly filers)", cat: "GST" },
+  { date: "20th monthly", task: "GSTR-3B & tax payment", cat: "GST" },
+  { date: "7th monthly", task: "TDS / TCS deposit", cat: "TDS" },
+  { date: "15 Jun / Sep / Dec / Mar", task: "Advance tax instalments", cat: "Income Tax" },
+  { date: "30th April", task: "PF / ESI annual returns review", cat: "Labour" },
+  { date: "30th May", task: "LLP Form 11 (annual return)", cat: "ROC" },
+  { date: "31st July", task: "ITR — non-audit cases", cat: "Income Tax" },
+  { date: "30th September", task: "DIR-3 KYC for directors", cat: "ROC" },
+  { date: "31st October", task: "ITR & tax audit — audit cases", cat: "Income Tax" },
+  { date: "30th October", task: "LLP Form 8 (accounts & solvency)", cat: "ROC" },
+  { date: "30th November", task: "Form MGT-7 / annual ROC filings", cat: "ROC" },
+  { date: "31st December", task: "GSTR-9 & 9C (annual)", cat: "GST" },
+];
+
+export const calendars = [
+  "GST Compliance Calendar",
+  "Income Tax Calendar",
+  "ROC Compliance Calendar",
+  "Labour Law Compliance Calendar",
 ];
 
 export const updates = [

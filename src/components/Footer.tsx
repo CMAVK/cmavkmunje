@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
-import { nav, serviceCategories, site } from "@/lib/site";
+import { lastReviewed, nav, serviceCategories, site } from "@/lib/site";
 
 export default function Footer() {
   return (
@@ -94,7 +94,9 @@ export default function Footer() {
           {site.name} is a professionally managed firm of Cost &amp; Management
           Accountants providing GST, Income Tax, Cost Audit, Labour Law,
           Corporate Compliance, Startup Advisory, Project Finance and Management
-          Consultancy services across India.
+          Consultancy services across India. Information on this site is for
+          general guidance and current as of {lastReviewed}; tax &amp; corporate
+          laws change frequently — please confirm with us before acting.
         </div>
       </div>
 
