@@ -4,7 +4,7 @@ import Logo from "@/components/Logo";
 export default function NotFound() {
   return (
     <section className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-5 py-24 text-center">
-      <Logo className="h-16 w-16" />
+      <Logo className="h-14" />
       <p className="mt-6 font-display text-6xl font-bold text-teal">404</p>
       <h1 className="mt-2 font-display text-2xl font-bold text-ink">
         Page not found

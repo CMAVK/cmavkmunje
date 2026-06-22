@@ -9,7 +9,9 @@ export default function Footer() {
         {/* Brand */}
         <div>
           <div className="flex items-center gap-3">
-            <Logo className="h-12 w-12" />
+            <span className="rounded-lg bg-white px-2 py-1.5">
+              <Logo className="h-8" />
+            </span>
             <div>
               <p className="font-display text-lg font-bold text-white">
                 {site.name}

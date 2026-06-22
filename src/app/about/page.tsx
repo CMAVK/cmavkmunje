@@ -86,6 +86,12 @@ export default function AboutPage() {
 
           <Reveal delay={0.1}>
             <aside className="rounded-2xl border border-black/5 bg-white p-7 shadow-sm">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo-full.png"
+                alt={`${site.name} logo`}
+                className="mx-auto mb-6 h-44 w-auto"
+              />
               <h3 className="font-display text-lg font-semibold text-teal">
                 At a glance
               </h3>
@@ -250,7 +256,9 @@ export default function AboutPage() {
       {/* CTA */}
       <section className="bg-teal-dark">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-5 px-5 py-16 text-center">
-          <Logo className="h-14 w-14" />
+          <span className="rounded-xl bg-white px-3 py-2">
+            <Logo className="h-12" />
+          </span>
           <h2 className="font-display text-3xl font-bold text-white">
             Work with a firm that gets your business
           </h2>

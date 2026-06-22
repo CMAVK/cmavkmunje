@@ -18,7 +18,7 @@ export default function Navbar() {
           className="flex items-center gap-3"
           onClick={() => setOpen(false)}
         >
-          <Logo className="h-11 w-11 shrink-0" />
+          <Logo className="h-9 shrink-0" />
           <span className="flex flex-col leading-tight">
             <span className="font-display text-base font-bold text-teal sm:text-lg">
               {site.name}
