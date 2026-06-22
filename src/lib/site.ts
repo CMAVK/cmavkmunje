@@ -25,7 +25,7 @@ export const site = {
     mapsUrl: "https://maps.app.goo.gl/xBkpWCRgakxoJA8u8",
     hours: "Mon – Sat · 10:00 AM – 7:00 PM",
   },
-  url: "https://cmavkmunje.in",
+  url: "https://cmavkmunje.com",
 };
 
 export const nav: { label: string; href: string }[] = [
