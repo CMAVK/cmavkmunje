@@ -1,16 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-teal: #0b4f4a;
-  --color-teal-dark: #083b37;
-  --color-teal-light: #0f635c;
+  /* Brand purple (matches the iCMA logo). Token names kept as "teal" for
+     simplicity; the values below define the firm's deep-purple identity. */
+  --color-teal: #463a6b;
+  --color-teal-dark: #2f2649;
+  --color-teal-light: #564a82;
   --color-gold: #c8932f;
   --color-gold-light: #e3b457;
   --color-gold-soft: #f3e4c4;
-  --color-cream: #fbf9f4;
-  --color-cream-deep: #f4efe3;
-  --color-ink: #1a2422;
-  --color-muted: #5b6b67;
+  --color-cream: #faf8f5;
+  --color-cream-deep: #f1ecf5;
+  --color-ink: #211b30;
+  --color-muted: #6b6379;
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-display: var(--font-poppins), var(--font-inter), sans-serif;
