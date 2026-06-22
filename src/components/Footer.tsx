@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Logo from "./Logo";
+import Newsletter from "./Newsletter";
 import { lastReviewed, nav, serviceCategories, site } from "@/lib/site";
 
 export default function Footer() {
@@ -25,6 +26,14 @@ export default function Footer() {
           <p className="mt-3 text-xs text-cream/50">
             Established {site.established} · Registered with ICMAI
           </p>
+          <div className="mt-5 max-w-xs">
+            <p className="text-sm font-medium text-white">
+              Compliance updates in your inbox
+            </p>
+            <div className="mt-2">
+              <Newsletter />
+            </div>
+          </div>
         </div>
 
         {/* Explore */}
@@ -40,6 +49,16 @@ export default function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link href="/blog" className="hover:text-white">
+                Knowledge Centre
+              </Link>
+            </li>
+            <li>
+              <Link href="/downloads" className="hover:text-white">
+                Downloads
+              </Link>
+            </li>
           </ul>
         </div>
 

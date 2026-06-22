@@ -71,6 +71,33 @@ export default function ResourcesPage() {
         </div>
       </section>
 
+      {/* Hub links */}
+      <section className="bg-cream-deep">
+        <div className="mx-auto max-w-7xl px-5 py-16">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              { href: "/blog", title: "Knowledge Centre", note: "Articles & guides on tax, GST and compliance." },
+              { href: "/downloads", title: "Download Centre", note: "Free GST, tax, ROC & startup checklists." },
+              { href: "/tools", title: "Calculators", note: "GST, EMI, HRA & income-tax calculators." },
+            ].map((c) => (
+              <Link
+                key={c.href}
+                href={c.href}
+                className="rounded-2xl border border-black/5 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:border-gold/40 hover:shadow-md"
+              >
+                <h3 className="font-display text-lg font-semibold text-teal">
+                  {c.title}
+                </h3>
+                <p className="mt-2 text-sm text-muted">{c.note}</p>
+                <span className="mt-3 inline-block text-sm font-semibold text-gold">
+                  Open →
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Knowledge / updates */}
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-5 py-20">

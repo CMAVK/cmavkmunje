@@ -42,13 +42,16 @@ export default function Home() {
               {site.profession} · Pune · Since {site.established}
             </span>
             <h1 className="mt-6 font-display text-4xl font-bold leading-tight text-white sm:text-5xl md:text-[3.4rem]">
-              Expert GST, Income Tax, Cost Audit &amp;{" "}
-              <span className="text-gold-light">Corporate Compliance</span>{" "}
-              services
+              Smarter compliance.{" "}
+              <span className="text-gold-light">Stronger decisions.</span>{" "}
+              Sustainable growth.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-cream/80">
-              Helping businesses stay compliant, reduce costs and grow profitably
-              since {site.established}. {site.tagline}.
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.14em] text-gold-light sm:text-base">
+              “{site.motto}”
+            </p>
+            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-cream/80">
+              {site.name} is a firm of {site.profession} helping businesses stay
+              compliant, reduce costs and grow profitably since {site.established}.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
@@ -273,9 +276,9 @@ export default function Home() {
               Compliance insights
             </h2>
             <p className="mt-3 text-muted">
-              Practical pointers to help you stay ahead. See more in our{" "}
-              <Link href="/resources" className="font-semibold text-gold">
-                resources
+              Practical pointers to help you stay ahead. Read more in our{" "}
+              <Link href="/blog" className="font-semibold text-gold">
+                Knowledge Centre
               </Link>
               .
             </p>

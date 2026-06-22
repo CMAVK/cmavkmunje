@@ -3,13 +3,16 @@
 import { useState } from "react";
 import { serviceCategories, site } from "@/lib/site";
 
-// No backend required: composes a pre-filled email to the firm.
-// To switch to a hosted form later (e.g. Formspree), replace the
-// handleSubmit body with a fetch() to your form endpoint.
+// Auto-receiving when NEXT_PUBLIC_FORMSPREE_ID is set (free at formspree.io):
+// submissions arrive in the firm's inbox without leaving the page. Until then,
+// it gracefully falls back to a pre-filled email (mailto) — works with no setup.
+const FORMSPREE = process.env.NEXT_PUBLIC_FORMSPREE_ID;
+
 export default function ContactForm() {
   const [sent, setSent] = useState(false);
+  const [busy, setBusy] = useState(false);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
@@ -20,6 +23,27 @@ export default function ContactForm() {
     const message = String(data.get("message") || "");
 
     const subject = `Enquiry: ${service || "General"} — ${name}`;
+
+    if (FORMSPREE) {
+      setBusy(true);
+      try {
+        const res = await fetch(`https://formspree.io/f/${FORMSPREE}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ name, company, phone, service, message, _subject: subject }),
+        });
+        if (res.ok) {
+          form.reset();
+          setSent(true);
+          return;
+        }
+      } catch {
+        /* fall through to mailto */
+      } finally {
+        setBusy(false);
+      }
+    }
+
     const body = [
       `Name: ${name}`,
       `Company: ${company}`,
@@ -28,7 +52,6 @@ export default function ContactForm() {
       "",
       message,
     ].join("\n");
-
     window.location.href = `mailto:${site.contact.email}?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
@@ -100,15 +123,16 @@ export default function ContactForm() {
 
       <button
         type="submit"
-        className="w-full rounded-full bg-teal px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01]"
+        disabled={busy}
+        className="w-full rounded-full bg-teal px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60"
       >
-        Send enquiry
+        {busy ? "Sending…" : "Send enquiry"}
       </button>
 
       {sent && (
         <p className="text-center text-sm text-teal">
-          Your email app should have opened with the message ready to send. If
-          not, email us directly at{" "}
+          Thank you — your enquiry has been sent. We&apos;ll get back to you
+          within one business day. You can also reach us at{" "}
           <a href={`mailto:${site.contact.email}`} className="font-semibold underline">
             {site.contact.email}
           </a>

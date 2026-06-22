@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useInView } from "framer-motion";
+import { useEffect, useState } from "react";
 
 export default function Counter({
   to,
@@ -14,14 +13,20 @@ export default function Counter({
   prefix?: string;
   duration?: number;
 }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
-  const [value, setValue] = useState(0);
+  // Start at the target so SSR / no-JS shows the real number; animate up on mount.
+  const [value, setValue] = useState(to);
 
   useEffect(() => {
-    if (!inView) return;
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setValue(to);
+      return;
+    }
     let raf = 0;
     const start = performance.now();
+    setValue(0);
     const tick = (now: number) => {
       const p = Math.min((now - start) / duration, 1);
       const eased = 1 - Math.pow(1 - p, 3);
@@ -30,10 +35,10 @@ export default function Counter({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [inView, to, duration]);
+  }, [to, duration]);
 
   return (
-    <span ref={ref}>
+    <span>
       {prefix}
       {value}
       {suffix}

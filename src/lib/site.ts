@@ -5,6 +5,7 @@ export const site = {
   shortName: "VKM & CO.",
   profession: "Cost & Management Accountants",
   tagline: "Your Trusted Partner for Taxation, Compliance & Business Growth",
+  motto: "Behind every successful business decision, there is always a CMA.",
   established: "2019",
   founder: {
     name: "CMA Vicky Munje",
@@ -54,6 +55,8 @@ export const routes = [
   "/resources",
   "/tools",
   "/faq",
+  "/blog",
+  "/downloads",
   "/contact",
 ];
 
@@ -368,4 +371,88 @@ export const updates = [
   { tag: "Income Tax", title: "Plan your regime before the year ends, not at filing", note: "Choosing old vs new regime early lets you align investments and TDS." },
   { tag: "ROC", title: "Diarise DIR-3 KYC and annual filings", note: "Per-day late fees add up quickly; a compliance calendar avoids penalties." },
   { tag: "Labour Law", title: "Verify PF/ESI wage definitions after pay revisions", note: "Wage restructuring can change contribution liability — review periodically." },
+];
+
+export type Post = {
+  slug: string;
+  title: string;
+  cat: string;
+  date: string;
+  excerpt: string;
+  body: string[];
+};
+
+// Knowledge Centre articles — informational, ICMAI-compliant. Add new posts here.
+export const posts: Post[] = [
+  {
+    slug: "old-vs-new-tax-regime",
+    title: "Old vs New Tax Regime: How to Decide",
+    cat: "Income Tax",
+    date: "2026-06-10",
+    excerpt:
+      "A simple framework to choose between the old and new regimes based on your income, deductions and investments.",
+    body: [
+      "The new tax regime offers lower slab rates but withdraws most deductions and exemptions, while the old regime retains them. The right choice depends entirely on your individual numbers.",
+      "As a rule of thumb, if you claim substantial deductions — such as 80C investments, home-loan interest, HRA and 80D — the old regime may still work out cheaper. If your deductions are modest, the new regime's lower rates usually win.",
+      "The only reliable way to decide is to compute tax both ways for your actual figures. We run both computations for our clients each year and recommend the regime that minimises tax, while keeping your investment goals in mind.",
+      "Remember that the regime can generally be chosen at the time of filing for individuals without business income, so there is flexibility year to year. Plan early so your TDS and advance tax align with your choice.",
+    ],
+  },
+  {
+    slug: "gst-itc-common-mistakes",
+    title: "Input Tax Credit: Five Common Mistakes to Avoid",
+    cat: "GST",
+    date: "2026-05-22",
+    excerpt:
+      "ITC mismatches are a leading cause of GST notices. Here are the errors we see most — and how to prevent them.",
+    body: [
+      "Input Tax Credit is valuable, but it is also one of the most scrutinised areas under GST. A few avoidable mistakes account for most disputes.",
+      "First, claiming credit that does not appear in your GSTR-2B. Credit must be reflected by your supplier — reconcile monthly. Second, claiming blocked credits under Section 17(5), such as on motor vehicles or personal expenses.",
+      "Third, missing the time limit to claim credit for an invoice. Fourth, not reversing credit where payment to the supplier is not made within 180 days. Fifth, poor documentation — every claim should be backed by a valid tax invoice.",
+      "A disciplined monthly reconciliation of books, GSTR-2B and supplier filings keeps your claims clean and notice-proof. We set up and run this process for clients so nothing slips.",
+    ],
+  },
+  {
+    slug: "private-limited-annual-compliance",
+    title: "Annual Compliance Calendar for a Private Limited Company",
+    cat: "ROC & MCA",
+    date: "2026-05-05",
+    excerpt:
+      "The key MCA filings and meetings every private company must complete each year to stay compliant.",
+    body: [
+      "A private limited company has recurring obligations under the Companies Act 2013, and missing them attracts per-day penalties and director disqualification.",
+      "Core annual items include holding board meetings and the AGM, filing AOC-4 (financial statements) and MGT-7/7A (annual return), completing DIR-3 KYC for every director, and maintaining statutory registers.",
+      "Event-based filings — for changes in directors, capital, registered office or charges — carry their own timelines and should not wait for year-end.",
+      "We maintain a compliance calendar for each company we serve, with reminders ahead of every due date, so filings are never missed and records stay inspection-ready.",
+    ],
+  },
+  {
+    slug: "what-bankers-want-project-report",
+    title: "What Your Banker Looks For in a Project Report",
+    cat: "Finance",
+    date: "2026-04-18",
+    excerpt:
+      "The DSCR, projections and CMA-data essentials that get term loans and working-capital limits sanctioned faster.",
+    body: [
+      "A well-prepared project report is often the difference between a quick sanction and a stalled application. Bankers look for realism, not optimism.",
+      "Key elements include credible revenue projections, a healthy and justifiable Debt Service Coverage Ratio (DSCR), accurate working-capital assessment, and sensitivity to downside scenarios.",
+      "For working-capital limits, CMA data prepared on the prescribed format — with consistent assumptions across the operating cycle — builds banker confidence.",
+      "We prepare bankable project reports and CMA data grounded in your actual financials and industry benchmarks, and support you through the sanction process.",
+    ],
+  },
+];
+
+export type Download = {
+  file: string;
+  title: string;
+  cat: string;
+  desc: string;
+};
+
+// Downloadable checklists (PDFs generated into /public/downloads).
+export const downloads: Download[] = [
+  { file: "gst-compliance-checklist.pdf", title: "GST Compliance Checklist", cat: "GST", desc: "Monthly and annual GST tasks, from returns to ITC reconciliation." },
+  { file: "income-tax-checklist.pdf", title: "Income Tax Filing Checklist", cat: "Income Tax", desc: "Documents and steps for a smooth, accurate ITR filing." },
+  { file: "roc-compliance-checklist.pdf", title: "ROC Compliance Checklist", cat: "ROC & MCA", desc: "Annual and event-based filings for companies and LLPs." },
+  { file: "startup-setup-checklist.pdf", title: "Startup Setup Checklist", cat: "Startup", desc: "Registrations and compliances to launch your venture right." },
 ];
