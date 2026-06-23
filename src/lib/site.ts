@@ -3,7 +3,7 @@
 export const site = {
   name: "V K MUNJE & COMPANY",
   shortName: "VKM & CO.",
-  profession: "Cost & Management Accountants",
+  profession: "Cost Accountants",
   tagline: "Your Trusted Partner for Taxation, Compliance & Business Growth",
   motto: "Behind every successful business decision, there is always a CMA.",
   established: "2019",

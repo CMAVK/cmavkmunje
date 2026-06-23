@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Calculators from "@/components/Calculators";
+import GstInvoiceGenerator from "@/components/GstInvoiceGenerator";
 import { disclaimer } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Financial Calculators",
+  title: "Free Tools & GST Invoice Generator",
   description:
-    "Free GST, EMI, HRA and Income Tax calculators from V K Munje & Company — quick, indicative estimates for planning.",
+    "Free GST invoice generator plus GST, EMI, HRA and Income Tax calculators from V K Munje & Company.",
 };
 
 export default function ToolsPage() {
@@ -27,7 +28,29 @@ export default function ToolsPage() {
         </div>
       </section>
 
+      {/* GST Invoice Generator — a tool most CA/CMA sites don't offer */}
+      <section className="mx-auto max-w-5xl px-5 pt-16">
+        <div className="mb-6">
+          <div className="accent-rule mb-4" />
+          <h2 className="font-display text-2xl font-bold text-teal sm:text-3xl">
+            GST Tax Invoice Generator
+          </h2>
+          <p className="mt-2 max-w-2xl text-muted">
+            Create a clean, GST-compliant tax invoice in seconds — add your items,
+            choose CGST+SGST or IGST, and download or print it as a PDF. Free, and
+            nothing is stored on our servers.
+          </p>
+        </div>
+        <GstInvoiceGenerator />
+      </section>
+
       <section className="mx-auto max-w-5xl px-5 py-16">
+        <div className="mb-6">
+          <div className="accent-rule mb-4" />
+          <h2 className="font-display text-2xl font-bold text-teal sm:text-3xl">
+            Financial Calculators
+          </h2>
+        </div>
         <Calculators />
         <p className="mt-6 text-center text-xs leading-relaxed text-muted">
           These calculators provide indicative estimates only and do not

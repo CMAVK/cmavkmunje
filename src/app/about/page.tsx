@@ -90,7 +90,7 @@ export default function AboutPage() {
               <img
                 src="/logo-full.png"
                 alt={`${site.name} logo`}
-                className="mx-auto mb-6 h-44 w-auto"
+                className="mx-auto mb-7 w-full max-w-[300px] h-auto"
               />
               <h3 className="font-display text-lg font-semibold text-teal">
                 At a glance

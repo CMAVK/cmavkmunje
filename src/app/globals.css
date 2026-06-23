@@ -73,3 +73,24 @@ h4 {
     animation: none;
   }
 }
+
+/* Print: show only the GST invoice sheet, hide everything else. */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .invoice-sheet,
+  .invoice-sheet * {
+    visibility: visible;
+  }
+  .invoice-sheet {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    border: none;
+    box-shadow: none;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
