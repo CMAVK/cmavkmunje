@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TbTargetArrow, TbEye } from "react-icons/tb";
+import {
+  TbTargetArrow, TbEye, TbCalendarStats, TbBriefcase,
+  TbCertificate, TbMapPin, TbWorld,
+} from "react-icons/tb";
 import Logo from "@/components/Logo";
 import Reveal from "@/components/Reveal";
 import { coreValues, site, timeline } from "@/lib/site";
@@ -85,42 +88,66 @@ export default function AboutPage() {
           </Reveal>
 
           <Reveal delay={0.1}>
-            <aside className="rounded-2xl border border-black/5 bg-white p-7 shadow-sm">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo-full.png"
-                alt={`${site.name} logo`}
-                className="mx-auto mb-7 w-full max-w-[300px] h-auto"
-              />
-              <h3 className="font-display text-lg font-semibold text-teal">
-                At a glance
-              </h3>
-              <ul className="mt-4 space-y-3 text-sm text-ink">
-                <li className="flex justify-between gap-3">
-                  <span className="text-muted">Established</span>
-                  <span className="font-medium">{site.established}</span>
-                </li>
-                <li className="flex justify-between gap-3">
-                  <span className="text-muted">Practice</span>
-                  <span className="font-medium text-right">
-                    {site.profession}
+            <aside className="overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
+              {/* Brand lockup — clean emblem + name (no card-edge lines) */}
+              <div className="flex flex-col items-center bg-cream-deep/40 px-7 pb-6 pt-8 text-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo-mark.png"
+                  alt={`${site.name} emblem`}
+                  className="mb-4 h-20 w-auto"
+                />
+                <p className="font-display text-xl font-bold tracking-wide text-teal">
+                  V K MUNJE &amp; CO.
+                </p>
+                <div className="my-2 h-px w-32 bg-gold" />
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-gold">
+                  Cost Accountants
+                </p>
+              </div>
+
+              {/* At a glance */}
+              <div className="px-7 py-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="font-display text-lg font-semibold text-teal">
+                    At a glance
+                  </h3>
+                  <span className="rounded-full bg-teal/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-teal">
+                    ICMAI Registered
                   </span>
-                </li>
-                <li className="flex justify-between gap-3">
-                  <span className="text-muted">Registration</span>
-                  <span className="font-medium">ICMAI</span>
-                </li>
-                <li className="flex justify-between gap-3">
-                  <span className="text-muted">Location</span>
-                  <span className="font-medium text-right">
-                    Kalyani Nagar, Pune
-                  </span>
-                </li>
-                <li className="flex justify-between gap-3">
-                  <span className="text-muted">Reach</span>
-                  <span className="font-medium">PAN India</span>
-                </li>
-              </ul>
+                </div>
+                <ul className="space-y-3.5 text-sm">
+                  {[
+                    { icon: TbCalendarStats, label: "Established", value: site.established },
+                    { icon: TbBriefcase, label: "Practice", value: site.profession },
+                    { icon: TbCertificate, label: "Registration", value: "ICMAI" },
+                    { icon: TbMapPin, label: "Location", value: "Kalyani Nagar, Pune" },
+                    { icon: TbWorld, label: "Reach", value: "PAN India" },
+                  ].map((row) => (
+                    <li key={row.label} className="flex items-center gap-3">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gold/10 text-gold">
+                        <row.icon className="h-4 w-4" />
+                      </span>
+                      <span className="text-muted">{row.label}</span>
+                      <span className="ml-auto text-right font-medium text-ink">
+                        {row.value}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="mt-5 rounded-xl bg-teal px-4 py-3 text-center">
+                  <p className="text-[11px] uppercase tracking-wide text-cream/60">
+                    Principal
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    {site.founder.name}
+                  </p>
+                  <p className="text-xs text-gold-light">
+                    {site.founder.credentials}
+                  </p>
+                </div>
+              </div>
             </aside>
           </Reveal>
         </div>
