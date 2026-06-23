@@ -23,18 +23,28 @@ export default function AdminPage() {
   const [tab, setTab] = useState<"reviews" | "documents">("reviews");
   const [reviews, setReviews] = useState<Review[]>([]);
   const [docs, setDocs] = useState<Doc[]>([]);
+  const [dataError, setDataError] = useState("");
 
   const loadReviews = useCallback(async () => {
-    const res = await fetch("/api/admin/reviews");
+    setDataError("");
+    const res = await fetch("/api/admin/reviews", { cache: "no-store" });
     if (res.status === 401) { setAuthed(false); return; }
     const json = await res.json();
+    if (!res.ok) {
+      setDataError(`Could not load reviews (${res.status}): ${json.error || "unknown error"}`);
+    }
     setReviews(json.reviews || []);
     setAuthed(true);
   }, []);
 
   const loadDocs = useCallback(async () => {
-    const res = await fetch("/api/admin/documents");
-    if (res.ok) setDocs((await res.json()).documents || []);
+    setDataError("");
+    const res = await fetch("/api/admin/documents", { cache: "no-store" });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setDataError(`Could not load documents (${res.status}): ${json.error || "unknown error"}`);
+    }
+    setDocs(json.documents || []);
   }, []);
 
   useEffect(() => { loadReviews(); }, [loadReviews]);
@@ -131,6 +141,12 @@ export default function AdminPage() {
           </button>
         </div>
       </div>
+
+      {dataError && (
+        <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 ring-1 ring-red-200">
+          {dataError}
+        </p>
+      )}
 
       <div className="mb-6 flex gap-2">
         {(["reviews", "documents"] as const).map((t) => (
