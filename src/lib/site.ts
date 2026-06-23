@@ -43,6 +43,7 @@ export const nav: { label: string; href: string }[] = [
   { label: "Resources", href: "/resources" },
   { label: "Tools", href: "/tools" },
   { label: "FAQs", href: "/faq" },
+  { label: "Book", href: "/book" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -57,6 +58,7 @@ export const routes = [
   "/faq",
   "/blog",
   "/downloads",
+  "/book",
   "/contact",
 ];
 
