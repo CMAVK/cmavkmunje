@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Logo from "./Logo";
 import Newsletter from "./Newsletter";
-import { lastReviewed, nav, serviceCategories, site } from "@/lib/site";
+import { clientNav, lastReviewed, nav, serviceCategories, site } from "@/lib/site";
 
 export default function Footer() {
   return (
@@ -59,6 +59,13 @@ export default function Footer() {
                 Downloads
               </Link>
             </li>
+            {clientNav.map((item) => (
+              <li key={item.href}>
+                <Link href={item.href} className="hover:text-white">
+                  {item.label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 

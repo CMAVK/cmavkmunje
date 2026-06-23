@@ -43,8 +43,16 @@ export const nav: { label: string; href: string }[] = [
   { label: "Resources", href: "/resources" },
   { label: "Tools", href: "/tools" },
   { label: "FAQs", href: "/faq" },
+  { label: "Reviews", href: "/feedback" },
   { label: "Book", href: "/book" },
   { label: "Contact", href: "/contact" },
+];
+
+// Client-portal links (shown in footer / used where relevant).
+export const clientNav: { label: string; href: string }[] = [
+  { label: "Upload Documents", href: "/upload" },
+  { label: "Client Login", href: "/login" },
+  { label: "Leave a Review", href: "/feedback" },
 ];
 
 // All routes for the sitemap.
@@ -59,6 +67,9 @@ export const routes = [
   "/blog",
   "/downloads",
   "/book",
+  "/upload",
+  "/feedback",
+  "/login",
   "/contact",
 ];
 
