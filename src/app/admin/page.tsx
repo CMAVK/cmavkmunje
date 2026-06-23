@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { StarDisplay } from "@/components/StarRating";
 import {
   FaLock, FaRightFromBracket, FaStar, FaRegStar, FaEye, FaEyeSlash,
-  FaTrash, FaCircleCheck, FaFileLines, FaDownload,
+  FaTrash, FaCircleCheck, FaFileLines, FaDownload, FaArrowsRotate,
 } from "react-icons/fa6";
 
 type Review = {
@@ -38,7 +38,12 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => { loadReviews(); }, [loadReviews]);
-  useEffect(() => { if (authed && tab === "documents") loadDocs(); }, [authed, tab, loadDocs]);
+  // Re-fetch whenever a tab is opened so data is always current.
+  useEffect(() => {
+    if (!authed) return;
+    if (tab === "reviews") loadReviews();
+    if (tab === "documents") loadDocs();
+  }, [authed, tab, loadReviews, loadDocs]);
 
   async function login(e: React.FormEvent) {
     e.preventDefault();
@@ -114,9 +119,17 @@ export default function AdminPage() {
     <section className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-teal">Admin Panel</h1>
-        <button onClick={logout} className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-cream-deep">
-          <FaRightFromBracket className="h-4 w-4" /> Sign out
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => (tab === "reviews" ? loadReviews() : loadDocs())}
+            className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-cream-deep"
+          >
+            <FaArrowsRotate className="h-4 w-4" /> Refresh
+          </button>
+          <button onClick={logout} className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-cream-deep">
+            <FaRightFromBracket className="h-4 w-4" /> Sign out
+          </button>
+        </div>
       </div>
 
       <div className="mb-6 flex gap-2">
