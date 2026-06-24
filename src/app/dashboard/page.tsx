@@ -88,12 +88,20 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-teal">Client Dashboard</h1>
           <p className="text-sm text-muted">Signed in as {email}</p>
         </div>
-        <button
-          onClick={signOut}
-          className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-ink hover:bg-cream-deep"
-        >
-          <FaRightFromBracket className="h-4 w-4" /> Sign out
-        </button>
+        <div className="flex items-center gap-2">
+          <a
+            href="/upload"
+            className="flex items-center gap-2 rounded-full bg-teal px-5 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03]"
+          >
+            <FaFileLines className="h-4 w-4" /> Submit Documents
+          </a>
+          <button
+            onClick={signOut}
+            className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm font-medium text-ink hover:bg-cream-deep"
+          >
+            <FaRightFromBracket className="h-4 w-4" /> Sign out
+          </button>
+        </div>
       </div>
 
       <p className="mb-6 rounded-xl bg-gold/10 px-4 py-2 text-xs text-gold-light/90 ring-1 ring-gold/20">

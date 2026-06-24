@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 import { site } from "@/lib/site";
 import { FaCloudArrowUp, FaFile, FaXmark, FaCircleCheck } from "react-icons/fa6";
@@ -33,7 +33,23 @@ export default function UploadForm() {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
+  const [me, setMe] = useState({ name: "", phone: "", email: "" });
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Pre-fill from the logged-in client (if any), so uploads are tagged to them.
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.auth.getSession().then(({ data }) => {
+      const u = data.session?.user;
+      if (u) {
+        setMe({
+          name: (u.user_metadata?.name as string) || "",
+          phone: (u.user_metadata?.phone as string) || "",
+          email: u.email || "",
+        });
+      }
+    });
+  }, [supabase]);
 
   function addFiles(list: FileList | null) {
     if (!list) return;
@@ -154,18 +170,18 @@ export default function UploadForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink">Your Name *</label>
-          <input name="client_name" required className={field} placeholder="Full name / business name" />
+          <input name="client_name" required className={field} placeholder="Full name / business name" defaultValue={me.name} key={"n" + me.name} />
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink">Phone *</label>
-          <input name="phone" required inputMode="tel" className={field} placeholder="10-digit mobile" />
+          <input name="phone" required inputMode="tel" className={field} placeholder="10-digit mobile" defaultValue={me.phone} key={"p" + me.phone} />
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink">Email</label>
-          <input name="email" type="email" className={field} placeholder="your@email.com" />
+          <input name="email" type="email" className={field} placeholder="your@email.com" defaultValue={me.email} key={"e" + me.email} />
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-ink">Document Category *</label>
