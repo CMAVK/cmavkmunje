@@ -7,24 +7,59 @@ import { getSupabase } from "@/lib/supabase";
 export default function LoginForm() {
   const supabase = getSupabase();
   const router = useRouter();
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [info, setInfo] = useState("");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setInfo("");
     if (!supabase) {
       setError("Login isn't configured yet. Please contact the firm.");
       return;
     }
     const data = new FormData(e.currentTarget);
-    const email = String(data.get("email") || "");
+    const email = String(data.get("email") || "").trim();
     const password = String(data.get("password") || "");
 
     setBusy(true);
+
+    if (mode === "signup") {
+      const name = String(data.get("name") || "").trim();
+      const phone = String(data.get("phone") || "").trim();
+      if (password.length < 6) {
+        setBusy(false);
+        setError("Password must be at least 6 characters.");
+        return;
+      }
+      const { data: res, error: signErr } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { name, phone } },
+      });
+      setBusy(false);
+      if (signErr) {
+        setError(signErr.message);
+        return;
+      }
+      if (res.session) {
+        // Email confirmation disabled → logged straight in.
+        router.push("/dashboard");
+      } else {
+        // Confirmation required → tell the client to verify.
+        setInfo(
+          "Account created! Please check your email to confirm your address, then sign in."
+        );
+        setMode("signin");
+      }
+      return;
+    }
+
+    // Sign in
     const { error: authErr } = await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-
     if (authErr) {
       setError("Invalid email or password. Please try again.");
       return;
@@ -36,29 +71,65 @@ export default function LoginForm() {
     "w-full rounded-lg border border-black/10 bg-white px-4 py-2.5 text-sm text-ink outline-none transition-colors focus:border-teal focus:ring-2 focus:ring-teal/20";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-ink">Email</label>
-        <input name="email" type="email" required className={field} placeholder="you@email.com" />
+    <div>
+      {/* Mode toggle */}
+      <div className="mb-5 grid grid-cols-2 gap-1 rounded-full bg-cream-deep p-1 text-sm font-medium">
+        <button
+          type="button"
+          onClick={() => { setMode("signin"); setError(""); setInfo(""); }}
+          className={`rounded-full py-2 transition-colors ${mode === "signin" ? "bg-teal text-white" : "text-muted"}`}
+        >
+          Sign In
+        </button>
+        <button
+          type="button"
+          onClick={() => { setMode("signup"); setError(""); setInfo(""); }}
+          className={`rounded-full py-2 transition-colors ${mode === "signup" ? "bg-teal text-white" : "text-muted"}`}
+        >
+          Create Account
+        </button>
       </div>
-      <div>
-        <label className="mb-1.5 block text-sm font-medium text-ink">Password</label>
-        <input name="password" type="password" required className={field} placeholder="••••••••" />
-      </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {mode === "signup" && (
+          <>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink">Full Name</label>
+              <input name="name" required className={field} placeholder="Your name / business name" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink">Phone</label>
+              <input name="phone" required inputMode="tel" className={field} placeholder="10-digit mobile" />
+            </div>
+          </>
+        )}
 
-      <button
-        type="submit"
-        disabled={busy}
-        className="w-full rounded-full bg-teal px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60"
-      >
-        {busy ? "Signing in…" : "Sign In"}
-      </button>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink">Email</label>
+          <input name="email" type="email" required className={field} placeholder="you@email.com" />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-ink">Password</label>
+          <input name="password" type="password" required minLength={6} className={field} placeholder="At least 6 characters" />
+        </div>
 
-      <p className="text-center text-xs text-muted">
-        Client login is provided by the firm. Don&apos;t have access yet? Please contact us.
-      </p>
-    </form>
+        {error && <p className="text-sm text-red-600">{error}</p>}
+        {info && <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{info}</p>}
+
+        <button
+          type="submit"
+          disabled={busy}
+          className="w-full rounded-full bg-teal px-6 py-3 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60"
+        >
+          {busy ? "Please wait…" : mode === "signup" ? "Create Account" : "Sign In"}
+        </button>
+
+        <p className="text-center text-xs text-muted">
+          {mode === "signup"
+            ? "By creating an account you can track your documents and compliance with us."
+            : "New client? Switch to “Create Account” above to register."}
+        </p>
+      </form>
+    </div>
   );
 }
