@@ -18,12 +18,6 @@ const compliance = [
   { label: "Income Tax Return", status: "Pending docs", tone: "warn" as const, note: "Awaiting documents" },
 ];
 
-const documents = [
-  { name: "GST Working — last month.xlsx", date: "Submitted recently" },
-  { name: "Bank Statement.pdf", date: "Submitted recently" },
-  { name: "Purchase Invoices.zip", date: "Submitted recently" },
-];
-
 const notices = [
   { title: "No active notices", detail: "You have no pending department notices.", clear: true },
 ];
@@ -49,6 +43,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
+  const [docs, setDocs] = useState<{ name: string; date: string }[]>([]);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -59,10 +54,28 @@ export default function DashboardPage() {
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) {
         router.replace("/login");
-      } else {
-        setEmail(data.session.user.email ?? "Client");
-        setChecking(false);
+        return;
       }
+      setEmail(data.session.user.email ?? "Client");
+      setChecking(false);
+
+      // Fetch this client's own uploaded documents (RLS filters by their email).
+      supabase
+        .from("documents")
+        .select("file_name, created_at")
+        .order("created_at", { ascending: false })
+        .then(({ data: rows }) => {
+          setDocs(
+            (rows || []).map((d) => ({
+              name: d.file_name as string,
+              date: new Date(d.created_at as string).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }),
+            }))
+          );
+        });
     });
   }, [router]);
 
@@ -152,14 +165,20 @@ export default function DashboardPage() {
           <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-ink">
             <FaFileLines className="h-5 w-5 text-teal" /> Uploaded Documents
           </h2>
-          <ul className="space-y-2">
-            {documents.map((d) => (
-              <li key={d.name} className="rounded-lg bg-cream/60 px-3 py-2">
-                <p className="truncate text-sm font-medium text-ink">{d.name}</p>
-                <p className="text-xs text-muted">{d.date}</p>
-              </li>
-            ))}
-          </ul>
+          {docs.length === 0 ? (
+            <p className="rounded-lg bg-cream/60 px-3 py-4 text-center text-sm text-muted">
+              You haven&apos;t submitted any documents yet.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {docs.map((d, i) => (
+                <li key={i} className="rounded-lg bg-cream/60 px-3 py-2">
+                  <p className="truncate text-sm font-medium text-ink">{d.name}</p>
+                  <p className="text-xs text-muted">Submitted {d.date}</p>
+                </li>
+              ))}
+            </ul>
+          )}
           <a href="/upload" className="mt-3 inline-block text-xs font-semibold text-teal hover:underline">
             + Upload more documents
           </a>

@@ -67,6 +67,13 @@ drop policy if exists "documents_insert_public" on public.documents;
 create policy "documents_insert_public" on public.documents
   for insert with check (true);
 
+-- Documents: a logged-in client may read ONLY their own submissions
+-- (rows whose email matches their authenticated email).
+drop policy if exists "documents_read_own" on public.documents;
+create policy "documents_read_own" on public.documents
+  for select to authenticated
+  using (email is not null and lower(email) = lower(auth.jwt() ->> 'email'));
+
 -- Appointments: anyone may insert a booking. No public read.
 drop policy if exists "appointments_insert_public" on public.appointments;
 create policy "appointments_insert_public" on public.appointments
