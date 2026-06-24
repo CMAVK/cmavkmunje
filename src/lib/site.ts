@@ -58,22 +58,40 @@ export const clientNav: { label: string; href: string }[] = [
 export type Opening = { role: string; type: string; location: string; desc: string };
 export const careers: Opening[] = [
   {
-    role: "CMA Article / Trainee",
+    role: "CMA / CA Article Trainee",
     type: "Articleship",
     location: "Pune · On-site",
     desc: "Hands-on training across GST, Income Tax, TDS, audit and ROC compliance under direct partner mentorship.",
   },
   {
-    role: "Accounts & Compliance Executive",
+    role: "Semi-Qualified Assistant (CMA/CA Inter)",
     type: "Full-time",
     location: "Pune · On-site",
-    desc: "Manage GST/TDS returns, bookkeeping, payroll and client coordination for a portfolio of clients.",
+    desc: "Independently handle return filing, reconciliations and assessments for a portfolio of clients.",
+  },
+  {
+    role: "Accounts & Taxation Executive",
+    type: "Full-time",
+    location: "Pune · On-site",
+    desc: "Bookkeeping, GST/TDS returns, payroll, MIS and day-to-day client coordination.",
+  },
+  {
+    role: "Audit Assistant",
+    type: "Full-time",
+    location: "Pune · On-site",
+    desc: "Support statutory, internal, cost and GST audits — vouching, documentation and working papers.",
   },
   {
     role: "CA / CMA Internship",
     type: "Internship",
     location: "Pune · Hybrid",
     desc: "For CA/CMA students seeking real practical exposure across taxation and corporate compliance.",
+  },
+  {
+    role: "Office / Admin Coordinator",
+    type: "Full-time",
+    location: "Pune · On-site",
+    desc: "Front-desk, client follow-ups, document management and scheduling to keep the practice running smoothly.",
   },
 ];
 
