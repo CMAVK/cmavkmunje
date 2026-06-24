@@ -53,10 +53,18 @@ export default function Navbar() {
           })}
           <li>
             <Link
-              href="/contact"
-              className="ml-1 rounded-full bg-gold px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03]"
+              href="/login"
+              className="ml-1 rounded-full border border-teal/30 px-4 py-2 text-sm font-semibold text-teal transition-colors hover:bg-teal hover:text-white"
             >
-              Book consultation
+              Client Portal
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/connect"
+              className="rounded-full bg-gold px-4 py-2 text-sm font-semibold text-white shadow-sm transition-transform hover:scale-[1.03]"
+            >
+              Book Consultation
             </Link>
           </li>
         </ul>
@@ -103,11 +111,20 @@ export default function Navbar() {
             ))}
             <li>
               <Link
-                href="/contact"
+                href="/login"
                 onClick={() => setOpen(false)}
-                className="mt-1 block rounded-lg bg-gold px-3 py-2.5 text-center text-sm font-semibold text-white"
+                className="mt-1 block rounded-lg border border-teal/30 px-3 py-2.5 text-center text-sm font-semibold text-teal"
               >
-                Book consultation
+                Client Portal
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/connect"
+                onClick={() => setOpen(false)}
+                className="block rounded-lg bg-gold px-3 py-2.5 text-center text-sm font-semibold text-white"
+              >
+                Book Consultation
               </Link>
             </li>
           </ul>

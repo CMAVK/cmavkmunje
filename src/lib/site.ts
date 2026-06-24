@@ -42,17 +42,46 @@ export const nav: { label: string; href: string }[] = [
   { label: "Industries", href: "/industries" },
   { label: "Resources", href: "/resources" },
   { label: "Tools", href: "/tools" },
-  { label: "FAQs", href: "/faq" },
-  { label: "Reviews", href: "/feedback" },
-  { label: "Book", href: "/book" },
+  { label: "Career", href: "/career" },
   { label: "Contact", href: "/contact" },
 ];
 
 // Client-portal links (shown in footer / used where relevant).
 export const clientNav: { label: string; href: string }[] = [
+  { label: "Client Portal", href: "/login" },
   { label: "Upload Documents", href: "/upload" },
-  { label: "Client Login", href: "/login" },
-  { label: "Leave a Review", href: "/feedback" },
+  { label: "Book a Consultation", href: "/connect" },
+  { label: "Reviews", href: "/connect?tab=reviews" },
+];
+
+// Career / job openings shown on the Career page. Edit here to update.
+export type Opening = { role: string; type: string; location: string; desc: string };
+export const careers: Opening[] = [
+  {
+    role: "CMA Article / Trainee",
+    type: "Articleship",
+    location: "Pune · On-site",
+    desc: "Hands-on training across GST, Income Tax, TDS, audit and ROC compliance under direct partner mentorship.",
+  },
+  {
+    role: "Accounts & Compliance Executive",
+    type: "Full-time",
+    location: "Pune · On-site",
+    desc: "Manage GST/TDS returns, bookkeeping, payroll and client coordination for a portfolio of clients.",
+  },
+  {
+    role: "CA / CMA Internship",
+    type: "Internship",
+    location: "Pune · Hybrid",
+    desc: "For CA/CMA students seeking real practical exposure across taxation and corporate compliance.",
+  },
+];
+
+export const careerPerks = [
+  { title: "Learn across domains", note: "Direct work on GST, Income Tax, audit, ROC, FEMA and labour law — not just one desk." },
+  { title: "Mentorship-first", note: "Close guidance from a practising CMA and CA, with real client responsibility early." },
+  { title: "Professional growth", note: "Support for exams, certifications and steady progression as you build expertise." },
+  { title: "Modern, ethical practice", note: "A technology-driven firm bound by professional ethics and confidentiality." },
 ];
 
 // All routes for the sitemap.
@@ -66,9 +95,9 @@ export const routes = [
   "/faq",
   "/blog",
   "/downloads",
-  "/book",
+  "/connect",
+  "/career",
   "/upload",
-  "/feedback",
   "/login",
   "/contact",
 ];

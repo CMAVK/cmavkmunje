@@ -55,10 +55,10 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href="/contact"
+                href="/connect"
                 className="rounded-full bg-gold px-7 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.03]"
               >
-                Book consultation
+                Book Consultation
               </Link>
               <a
                 href={`tel:+91${site.contact.phones[0]}`}
@@ -315,10 +315,10 @@ export default function Home() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
-              href="/contact"
+              href="/connect"
               className="rounded-full bg-gold px-7 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:scale-[1.03]"
             >
-              Book consultation
+              Book Consultation
             </Link>
             <a
               href={`tel:+91${site.contact.phones[0]}`}

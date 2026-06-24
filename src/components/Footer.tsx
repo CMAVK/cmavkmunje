@@ -59,6 +59,11 @@ export default function Footer() {
                 Downloads
               </Link>
             </li>
+            <li>
+              <Link href="/faq" className="hover:text-white">
+                FAQs
+              </Link>
+            </li>
             {clientNav.map((item) => (
               <li key={item.href}>
                 <Link href={item.href} className="hover:text-white">
@@ -117,8 +122,8 @@ export default function Footer() {
       {/* Authority statement */}
       <div className="border-t border-white/10">
         <div className="mx-auto max-w-7xl px-5 py-6 text-center text-xs leading-relaxed text-cream/55">
-          {site.name} is a professionally managed firm of Cost &amp; Management
-          Accountants providing GST, Income Tax, Cost Audit, Labour Law,
+          {site.name} is a professionally managed firm of Cost Accountants
+          providing GST, Income Tax, Cost Audit, Labour Law,
           Corporate Compliance, Startup Advisory, Project Finance and Management
           Consultancy services across India. Information on this site is for
           general guidance and current as of {lastReviewed}; tax &amp; corporate
