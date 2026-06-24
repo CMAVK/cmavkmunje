@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { serviceCategories, site } from "@/lib/site";
+import { getSupabase } from "@/lib/supabase";
 
 // Auto-receiving when NEXT_PUBLIC_FORMSPREE_ID is set (free at formspree.io):
 // submissions arrive in the firm's inbox without leaving the page. Until then,
@@ -23,6 +24,16 @@ export default function ContactForm() {
     const message = String(data.get("message") || "");
 
     const subject = `Enquiry: ${service || "General"} — ${name}`;
+
+    // Save to the firm's Leads list (shows in /admin → Leads).
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        await supabase.from("leads").insert({
+          source: "contact", name, company, phone, service, message,
+        });
+      } catch { /* non-blocking */ }
+    }
 
     if (FORMSPREE) {
       setBusy(true);

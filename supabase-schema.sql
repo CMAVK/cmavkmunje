@@ -43,12 +43,34 @@ create table if not exists public.appointments (
   created_at timestamptz not null default now()
 );
 
+-- ---------- LEADS (consultation bookings + contact enquiries) ----------
+create table if not exists public.leads (
+  id uuid primary key default gen_random_uuid(),
+  source text not null,            -- 'booking' | 'contact'
+  name text,
+  email text,
+  phone text,
+  company text,
+  service text,
+  date date,
+  "time" text,
+  message text,
+  status text not null default 'new',   -- new | contacted | done
+  created_at timestamptz not null default now()
+);
+
 -- ============================================================
 --  ROW LEVEL SECURITY
 -- ============================================================
 alter table public.reviews      enable row level security;
 alter table public.documents    enable row level security;
 alter table public.appointments enable row level security;
+alter table public.leads        enable row level security;
+
+-- Leads: anyone may submit (insert) a booking/contact lead. No public read.
+drop policy if exists "leads_insert_public" on public.leads;
+create policy "leads_insert_public" on public.leads
+  for insert with check (true);
 
 -- Reviews: anyone may read ONLY approved reviews.
 drop policy if exists "reviews_read_approved" on public.reviews;

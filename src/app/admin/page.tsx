@@ -15,15 +15,36 @@ type Doc = {
   id: string; client_name: string; email: string | null; phone: string | null;
   category: string; file_name: string; created_at: string; url: string | null;
 };
+type Lead = {
+  id: string; source: string; name: string | null; email: string | null;
+  phone: string | null; company: string | null; service: string | null;
+  date: string | null; time: string | null; message: string | null;
+  status: string; created_at: string;
+};
+
+type Tab = "leads" | "reviews" | "documents";
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"reviews" | "documents">("reviews");
+  const [tab, setTab] = useState<Tab>("leads");
   const [reviews, setReviews] = useState<Review[]>([]);
   const [docs, setDocs] = useState<Doc[]>([]);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [dataError, setDataError] = useState("");
+
+  const loadLeads = useCallback(async () => {
+    setDataError("");
+    const res = await fetch("/api/admin/leads", { cache: "no-store" });
+    if (res.status === 401) { setAuthed(false); return; }
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setDataError(`Could not load leads (${res.status}): ${json.error || "unknown error"}`);
+    }
+    setLeads(json.leads || []);
+    setAuthed(true);
+  }, []);
 
   const loadReviews = useCallback(async () => {
     setDataError("");
@@ -47,13 +68,14 @@ export default function AdminPage() {
     setDocs(json.documents || []);
   }, []);
 
-  useEffect(() => { loadReviews(); }, [loadReviews]);
+  useEffect(() => { loadLeads(); }, [loadLeads]);
   // Re-fetch whenever a tab is opened so data is always current.
   useEffect(() => {
     if (!authed) return;
+    if (tab === "leads") loadLeads();
     if (tab === "reviews") loadReviews();
     if (tab === "documents") loadDocs();
-  }, [authed, tab, loadReviews, loadDocs]);
+  }, [authed, tab, loadLeads, loadReviews, loadDocs]);
 
   async function login(e: React.FormEvent) {
     e.preventDefault();
@@ -63,8 +85,27 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
     });
-    if (res.ok) { setPassword(""); loadReviews(); }
+    if (res.ok) { setPassword(""); loadLeads(); }
     else setError((await res.json()).error || "Login failed.");
+  }
+
+  async function patchLead(id: string, status: string) {
+    await fetch("/api/admin/leads", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    loadLeads();
+  }
+
+  async function deleteLead(id: string) {
+    if (!confirm("Delete this lead permanently?")) return;
+    await fetch("/api/admin/leads", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    loadLeads();
   }
 
   async function logout() {
@@ -123,6 +164,7 @@ export default function AdminPage() {
   }
 
   const pending = reviews.filter((r) => r.status === "pending");
+  const newLeads = leads.filter((l) => l.status === "new").length;
 
   // ---- Dashboard ----
   return (
@@ -131,7 +173,7 @@ export default function AdminPage() {
         <h1 className="text-2xl font-bold text-teal">Admin Panel</h1>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => (tab === "reviews" ? loadReviews() : loadDocs())}
+            onClick={() => (tab === "leads" ? loadLeads() : tab === "reviews" ? loadReviews() : loadDocs())}
             className="flex items-center gap-2 rounded-full border border-black/10 px-4 py-2 text-sm hover:bg-cream-deep"
           >
             <FaArrowsRotate className="h-4 w-4" /> Refresh
@@ -149,7 +191,7 @@ export default function AdminPage() {
       )}
 
       <div className="mb-6 flex gap-2">
-        {(["reviews", "documents"] as const).map((t) => (
+        {(["leads", "reviews", "documents"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -158,12 +200,71 @@ export default function AdminPage() {
             }`}
           >
             {t}
+            {t === "leads" && newLeads > 0 && (
+              <span className="ml-2 rounded-full bg-gold px-1.5 text-xs text-white">{newLeads}</span>
+            )}
             {t === "reviews" && pending.length > 0 && (
               <span className="ml-2 rounded-full bg-gold px-1.5 text-xs text-white">{pending.length}</span>
             )}
           </button>
         ))}
       </div>
+
+      {/* Leads — consultation bookings + contact enquiries */}
+      {tab === "leads" && (
+        <div className="space-y-3">
+          {leads.length === 0 && <p className="text-sm text-muted">No leads yet.</p>}
+          {leads.map((l) => (
+            <div key={l.id} className="rounded-2xl border border-black/10 bg-white p-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                  l.source === "booking" ? "bg-gold/15 text-gold" : "bg-teal/10 text-teal"
+                }`}>
+                  {l.source === "booking" ? "Booking" : "Contact"}
+                </span>
+                <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                  l.status === "done" ? "bg-emerald-50 text-emerald-700"
+                  : l.status === "contacted" ? "bg-blue-50 text-blue-700"
+                  : "bg-amber-50 text-amber-700"
+                }`}>{l.status}</span>
+                <span className="ml-auto text-xs text-muted">
+                  {new Date(l.created_at).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}
+                </span>
+              </div>
+
+              <p className="mt-2 font-semibold text-ink">{l.name || "—"}</p>
+              <p className="text-sm text-muted">
+                {[
+                  l.phone && `📞 ${l.phone}`,
+                  l.email && `✉️ ${l.email}`,
+                  l.company && `🏢 ${l.company}`,
+                  l.service && `🛈 ${l.service}`,
+                ].filter(Boolean).join("   ")}
+              </p>
+              {(l.date || l.time) && (
+                <p className="text-sm text-teal">Preferred: {l.date} {l.time}</p>
+              )}
+              {l.message && <p className="mt-1 text-sm text-ink">“{l.message}”</p>}
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                {l.phone && (
+                  <a href={`tel:+91${l.phone}`} className="rounded-full bg-teal px-3 py-1.5 text-xs font-semibold text-white">Call</a>
+                )}
+                {l.phone && (
+                  <a href={`https://wa.me/91${l.phone}`} target="_blank" rel="noopener noreferrer" className="rounded-full bg-[#25D366] px-3 py-1.5 text-xs font-semibold text-white">WhatsApp</a>
+                )}
+                {l.status !== "contacted" && (
+                  <button onClick={() => patchLead(l.id, "contacted")} className="rounded-full bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white">Mark contacted</button>
+                )}
+                {l.status !== "done" && (
+                  <button onClick={() => patchLead(l.id, "done")} className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white">Mark done</button>
+                )}
+                <button onClick={() => deleteLead(l.id)} className="rounded-full border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50">Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Reviews */}
       {tab === "reviews" && (

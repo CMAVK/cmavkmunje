@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { serviceCategories, site } from "@/lib/site";
+import { getSupabase } from "@/lib/supabase";
 
 const FORMSPREE = process.env.NEXT_PUBLIC_FORMSPREE_BOOK_ID || process.env.NEXT_PUBLIC_FORMSPREE_ID;
 
@@ -33,6 +34,16 @@ export default function BookingForm() {
     const message = String(data.get("message") || "");
 
     const subject = `Consultation Booking: ${service || "General"} — ${name} on ${date}`;
+
+    // Save to the firm's Leads list (shows in /admin → Leads).
+    const supabase = getSupabase();
+    if (supabase) {
+      try {
+        await supabase.from("leads").insert({
+          source: "booking", name, email, phone: mobile, service, date, time, message,
+        });
+      } catch { /* non-blocking */ }
+    }
 
     if (FORMSPREE) {
       setBusy(true);
