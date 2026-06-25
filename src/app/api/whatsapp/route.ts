@@ -67,6 +67,20 @@ export async function GET(req: Request) {
       const out = await graph(`${waba}/subscribed_apps`, "POST");
       return NextResponse.json({ action, ...out });
     }
+    if (action === "template") {
+      const to = url.searchParams.get("to") || "";
+      const r = await fetch(`https://graph.facebook.com/${version}/${pnid}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tkn}` },
+        body: JSON.stringify({
+          messaging_product: "whatsapp",
+          to,
+          type: "template",
+          template: { name: "hello_world", language: { code: "en_US" } },
+        }),
+      });
+      return NextResponse.json({ action, status: r.status, body: (await r.text()).slice(0, 1000) });
+    }
 
     // default: send a plain text to ?to=
     const to = url.searchParams.get("to") || "";
