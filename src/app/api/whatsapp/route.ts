@@ -36,6 +36,40 @@ import {
 // ── GET: verification handshake ──────────────────────────────
 export async function GET(req: Request) {
   const url = new URL(req.url);
+
+  // Temporary diagnostic: ?selftest=1&token=<verify_token>&to=<number>
+  // Sends a plain text via the Graph API using the env token, and returns the
+  // raw API response so send errors are visible. Gated by the verify token.
+  // REMOVE after debugging.
+  if (url.searchParams.get("selftest") === "1") {
+    if (url.searchParams.get("token") !== process.env.WHATSAPP_VERIFY_TOKEN) {
+      return new Response("Forbidden", { status: 403 });
+    }
+    const to = url.searchParams.get("to") || "";
+    const tkn = process.env.WHATSAPP_TOKEN;
+    const pnid = process.env.WHATSAPP_PHONE_NUMBER_ID;
+    const version = process.env.WHATSAPP_GRAPH_VERSION || "v21.0";
+    let response = "(no request made)";
+    let status = 0;
+    if (tkn && pnid && to) {
+      const r = await fetch(`https://graph.facebook.com/${version}/${pnid}/messages`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${tkn}` },
+        body: JSON.stringify({ messaging_product: "whatsapp", to, type: "text", text: { body: "VKM AI self-test ✅" } }),
+      });
+      status = r.status;
+      response = (await r.text()).slice(0, 1000);
+    }
+    return NextResponse.json({
+      tokenPresent: !!tkn,
+      tokenLength: tkn ? tkn.length : 0,
+      phoneNumberId: pnid ?? null,
+      anthropicKeyPresent: !!process.env.ANTHROPIC_API_KEY,
+      sendStatus: status,
+      sendResponse: response,
+    });
+  }
+
   const mode = url.searchParams.get("hub.mode");
   const token = url.searchParams.get("hub.verify_token");
   const challenge = url.searchParams.get("hub.challenge");
