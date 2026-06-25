@@ -37,18 +37,39 @@ import {
 export async function GET(req: Request) {
   const url = new URL(req.url);
 
-  // Temporary diagnostic: ?selftest=1&token=<verify_token>&to=<number>
-  // Sends a plain text via the Graph API using the env token, and returns the
-  // raw API response so send errors are visible. Gated by the verify token.
-  // REMOVE after debugging.
+  // Temporary diagnostic, gated by the verify token. REMOVE after debugging.
+  //   ?selftest=1&token=<verify_token>&action=send&to=<number>
+  //   ?selftest=1&token=<verify_token>&action=checkwaba&waba=<id>
+  //   ?selftest=1&token=<verify_token>&action=subscribe&waba=<id>
   if (url.searchParams.get("selftest") === "1") {
     if (url.searchParams.get("token") !== process.env.WHATSAPP_VERIFY_TOKEN) {
       return new Response("Forbidden", { status: 403 });
     }
-    const to = url.searchParams.get("to") || "";
+    const action = url.searchParams.get("action") || "send";
     const tkn = process.env.WHATSAPP_TOKEN;
     const pnid = process.env.WHATSAPP_PHONE_NUMBER_ID;
     const version = process.env.WHATSAPP_GRAPH_VERSION || "v21.0";
+    const waba = url.searchParams.get("waba") || "";
+
+    const graph = async (path: string, method: "GET" | "POST") => {
+      const r = await fetch(`https://graph.facebook.com/${version}/${path}`, {
+        method,
+        headers: { Authorization: `Bearer ${tkn}` },
+      });
+      return { status: r.status, body: (await r.text()).slice(0, 1000) };
+    };
+
+    if (action === "checkwaba" && waba) {
+      const out = await graph(`${waba}/subscribed_apps`, "GET");
+      return NextResponse.json({ action, ...out });
+    }
+    if (action === "subscribe" && waba) {
+      const out = await graph(`${waba}/subscribed_apps`, "POST");
+      return NextResponse.json({ action, ...out });
+    }
+
+    // default: send a plain text to ?to=
+    const to = url.searchParams.get("to") || "";
     let response = "(no request made)";
     let status = 0;
     if (tkn && pnid && to) {
@@ -61,6 +82,7 @@ export async function GET(req: Request) {
       response = (await r.text()).slice(0, 1000);
     }
     return NextResponse.json({
+      action,
       tokenPresent: !!tkn,
       tokenLength: tkn ? tkn.length : 0,
       phoneNumberId: pnid ?? null,
