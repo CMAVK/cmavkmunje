@@ -87,8 +87,21 @@ Use this only for a **separate** number (e.g. a second SIM), NOT for 9922099970.
 
 ## 4. Test it
 
-- **Website:** open the site, click the chat bubble, ask "What is the due date for GSTR-3B?" — replies should come from VKM AI.
-- **WhatsApp (Coexistence):** from a *different* phone, message `9922099970`. You should get an AI reply within a few seconds, the same thread appears in your Business app on your phone, and you'll see a new row in `leads` (source `whatsapp`) + rows in `whatsapp_messages`. (Option B users test against the Meta test number instead.)
+Use a **second phone** (not the one running the Business app) and message `9922099970`. Run through this checklist:
+
+| Send this | Expected |
+|---|---|
+| `hi` (or `menu`) | The **interactive menu** appears — "Our Services" + "Quick Actions" with a "View options" button. |
+| Tap **GST & Returns** | VKM AI sends a short GST intro and asks a follow-up question. |
+| `What is the due date for GSTR-3B?` | A correct AI answer within a few seconds. |
+| Tap **Free Checklists** → **GST Checklist** | The **GST checklist PDF** is delivered in chat. |
+| Tap **Book Consultation** | A message with the `/connect` booking link + phone. |
+| Tap **Talk to our team** | A handoff message asking for name/business/question. |
+| Send a photo or PDF | A polite acknowledgement. |
+
+Also confirm: the same threads appear in your **Business app** on your phone (Coexistence), a new row lands in **`leads`** (source `whatsapp`), and rows appear in **`whatsapp_messages`**. (Option B users test against the Meta test number.)
+
+> Tip: while testing, watch **Vercel → your project → Logs** for the `/api/whatsapp` function — any send/Claude errors are logged there with a `[whatsapp]` prefix.
 
 ---
 
@@ -107,9 +120,14 @@ WhatsApp also: loads last 12 msgs from whatsapp_messages → replies via Graph A
 
 - **Change the bot's behaviour / persona / rules:** `src/lib/vkmBrain.ts`.
 - **Change firm services, FAQs, due dates the bot quotes:** `src/lib/site.ts` (shared with the whole website).
-- **WhatsApp delivery/format logic:** `src/app/api/whatsapp/route.ts`.
+- **WhatsApp delivery, menu, document sending:** `src/lib/whatsapp.ts` (menu rows, checklists, canned messages) + `src/app/api/whatsapp/route.ts` (routing).
 
-### Notes & limits (Phase 1)
+### Menu & checklists (Phase 2 — built in)
+- Typing **hi / hello / menu / namaste** shows a tap-able list menu. Tapping a **service** gives an AI intro; **Free Checklists** sends the PDFs from `/public/downloads`; **Book** / **Talk to our team** send canned messages.
+- To add/rename menu rows or checklists, edit the `sendMainMenu`, `sendChecklistMenu` and `CHECKLISTS` definitions in `src/lib/whatsapp.ts`. WhatsApp limits: max 10 rows per list, row title ≤ 24 chars.
+- Sending a checklist works because the PDFs are publicly served at `https://cmavkmunje.com/downloads/<file>.pdf`.
+
+### Notes & limits
 - The webhook processes synchronously then returns 200 (Haiku is fast). If you later move to a slower model, consider acknowledging first and processing in the background.
-- Replies are plain text. Buttons/list menus and document **sending** (checklists, computations) are a Phase-2 add-on.
-- WhatsApp's 24-hour customer-service window applies: the bot can reply freely within 24h of a user's message. Proactively messaging users outside that window needs pre-approved message templates.
+- WhatsApp's 24-hour customer-service window applies: the bot can reply freely within 24h of a user's message. Proactively messaging users **outside** that window needs pre-approved message templates.
+- Outbound documents must be on a public HTTPS URL (the checklists already are). For private/per-client files, upload to WhatsApp Media first — a future enhancement.

@@ -1,27 +1,37 @@
 import { NextResponse } from "next/server";
 import { callClaude, type ChatMessage } from "@/lib/vkmBrain";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
+import {
+  sendText,
+  sendDocument,
+  sendMainMenu,
+  sendChecklistMenu,
+  bookingMessage,
+  humanHandoffMessage,
+  isGreetingOrMenu,
+  checklistLink,
+  CHECKLISTS,
+  SERVICE_PROMPTS,
+} from "@/lib/whatsapp";
 
 // ============================================================
 //  WhatsApp Business (Meta Cloud API) webhook for VKM AI.
 //
-//  GET  → webhook verification handshake (Meta calls this once
-//         when you subscribe the webhook in the App dashboard).
-//  POST → incoming messages. We load the recent conversation for
-//         that number, ask Claude (shared VKM AI brain), reply via
-//         the Graph API, and store both sides. A lead is captured
-//         in the `leads` table on the contact's first message.
+//  GET  → webhook verification handshake.
+//  POST → incoming messages. Flow:
+//          • tapped menu option   → handle the action (menu / checklist
+//            PDF / booking / human handoff / service intro via AI)
+//          • greeting ("hi"/"menu")→ send the interactive main menu
+//          • any other text       → VKM AI answers automatically (Claude)
+//          • media (image/doc)    → polite acknowledgement
+//         Conversation is remembered per number (whatsapp_messages),
+//         Meta retries are de-duplicated, and a lead is captured on the
+//         contact's first message.
 //
 //  Required env vars (see WHATSAPP-SETUP.md):
-//    WHATSAPP_VERIFY_TOKEN   — any secret string you choose
-//    WHATSAPP_TOKEN          — permanent access token
-//    WHATSAPP_PHONE_NUMBER_ID— the number's Phone Number ID
-//    ANTHROPIC_API_KEY       — already used by the website chat
-//  Optional:
-//    WHATSAPP_GRAPH_VERSION  — defaults to v21.0
+//    WHATSAPP_VERIFY_TOKEN, WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID,
+//    ANTHROPIC_API_KEY
 // ============================================================
-
-const GRAPH_VERSION = process.env.WHATSAPP_GRAPH_VERSION || "v21.0";
 
 // ── GET: verification handshake ──────────────────────────────
 export async function GET(req: Request) {
@@ -31,7 +41,6 @@ export async function GET(req: Request) {
   const challenge = url.searchParams.get("hub.challenge");
 
   if (mode === "subscribe" && token && token === process.env.WHATSAPP_VERIFY_TOKEN) {
-    // Meta expects the raw challenge string echoed back with 200.
     return new Response(challenge ?? "", { status: 200 });
   }
   return new Response("Forbidden", { status: 403 });
@@ -49,9 +58,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
-  // Always acknowledge fast; Meta retries on non-200. We process inline
-  // (Haiku is quick) and still return 200 at the end. Any error is logged
-  // but we avoid 5xx so Meta does not flood us with retries.
+  // Always return 200 (Meta retries on non-200). We process inline (Haiku is
+  // fast); errors are logged but we avoid 5xx so Meta doesn't flood retries.
   try {
     const value = payload?.entry?.[0]?.changes?.[0]?.value;
     const message = value?.messages?.[0];
@@ -64,7 +72,7 @@ export async function POST(req: Request) {
     const from = message.from; // sender's WhatsApp number (E.164, no +)
     const waMessageId = message.id;
     const profileName = value?.contacts?.[0]?.profile?.name ?? null;
-    const text = extractText(message);
+    const { text, interactiveId } = parseMessage(message);
 
     if (!from || !waMessageId) {
       return NextResponse.json({ ok: true });
@@ -75,56 +83,83 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true });
     }
 
+    const ctx = { phoneNumberId, token };
     const db = getSupabaseAdmin();
 
-    // Dedupe: Meta re-delivers if we are slow. Skip already-seen messages.
+    // Dedupe: Meta re-delivers if we're slow. Skip already-handled messages.
     if (db && (await alreadyHandled(db, waMessageId))) {
       return NextResponse.json({ ok: true });
     }
 
-    // Non-text messages (images, docs, audio): acknowledge politely.
-    if (!text) {
-      await sendWhatsApp(
-        phoneNumberId,
-        token,
-        from,
-        "Thank you. I've noted your message. For documents, our team will review and get back to you — you can also share details in text and I'll guide you right away."
-      );
-      if (db) {
-        await recordMessage(db, from, "assistant", "[acknowledged non-text message]", null);
-      }
-      return NextResponse.json({ ok: true });
-    }
-
-    // Build context from recent history (if DB available).
     const history = db ? await loadHistory(db, from) : [];
     const isFirstContact = history.length === 0;
-    const messages: ChatMessage[] = [...history, { role: "user", content: text }];
 
-    let reply: string | null;
-    try {
-      reply = await callClaude(messages, { channel: "whatsapp", maxTokens: 600 });
-    } catch (err) {
-      console.error("[whatsapp] Claude error:", err);
-      reply = null;
+    // What we store as the inbound user turn (readable in history).
+    const inboundLabel = text || (interactiveId ? `[tapped: ${interactiveId}]` : "[non-text message]");
+
+    // ---- Route the message --------------------------------------------------
+    // aiInput, when set, means "let VKM AI answer this". Otherwise we've already
+    // replied with a menu/document/canned message inside the branch.
+    let aiInput: string | null = null;
+    let cannedReply: string | null = null; // outbound text we sent, for history
+
+    if (interactiveId && CHECKLISTS[interactiveId]) {
+      const c = CHECKLISTS[interactiveId];
+      await sendDocument(ctx, from, {
+        link: checklistLink(c.file),
+        filename: c.file,
+        caption: `${c.title} — from V K Munje & Company. For a review tailored to your business, just ask.`,
+      });
+      cannedReply = `[sent document: ${c.title}]`;
+    } else if (interactiveId === "menu_checklists") {
+      await sendChecklistMenu(ctx, from);
+      cannedReply = "[sent checklist menu]";
+    } else if (interactiveId === "action_book") {
+      cannedReply = bookingMessage();
+      await sendText(ctx, from, cannedReply);
+    } else if (interactiveId === "action_human") {
+      cannedReply = humanHandoffMessage();
+      await sendText(ctx, from, cannedReply);
+    } else if (interactiveId && SERVICE_PROMPTS[interactiveId]) {
+      aiInput = SERVICE_PROMPTS[interactiveId];
+    } else if (!text && !interactiveId) {
+      // Media (image / document / audio): acknowledge politely.
+      cannedReply =
+        "Thank you — I've received your message. You can type your question and I'll guide you right away, or send 'menu' to see options.";
+      await sendText(ctx, from, cannedReply);
+    } else if (text && isGreetingOrMenu(text)) {
+      await sendMainMenu(ctx, from, profileName);
+      cannedReply = "[sent main menu]";
+    } else {
+      aiInput = text || interactiveId; // free-text question → AI
     }
 
-    const finalReply =
-      reply ??
-      `Thank you for messaging V K Munje & Company. Our team will assist you shortly. For urgent help, please call +91 9922099970 or email cma.vickymunje@gmail.com.`;
+    // ---- AI answer (if this turn needs one) ---------------------------------
+    if (aiInput) {
+      const messages: ChatMessage[] = [...history, { role: "user", content: aiInput }];
+      let reply: string | null;
+      try {
+        reply = await callClaude(messages, { channel: "whatsapp", maxTokens: 600 });
+      } catch (err) {
+        console.error("[whatsapp] Claude error:", err);
+        reply = null;
+      }
+      cannedReply =
+        reply ??
+        "Thank you for messaging V K Munje & Company. Our team will assist you shortly. For urgent help, call +91 9922099970 or email cma.vickymunje@gmail.com.";
+      await sendText(ctx, from, cannedReply);
+    }
 
-    await sendWhatsApp(phoneNumberId, token, from, finalReply);
-
-    // Persist conversation + capture a lead on first contact.
+    // ---- Persist conversation + capture lead on first contact ---------------
     if (db) {
-      await recordMessage(db, from, "user", text, waMessageId);
-      await recordMessage(db, from, "assistant", finalReply, null);
+      await recordMessage(db, from, "user", inboundLabel, waMessageId);
+      if (cannedReply) await recordMessage(db, from, "assistant", cannedReply, null);
       if (isFirstContact) {
         await db.from("leads").insert({
           source: "whatsapp",
           name: profileName,
           phone: from,
-          message: `First WhatsApp message: ${text}`.slice(0, 1000),
+          message: `First WhatsApp message: ${inboundLabel}`.slice(0, 1000),
         });
       }
     }
@@ -132,56 +167,26 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[whatsapp] handler error:", err);
-    // Still 200 so Meta does not retry a poisoned event repeatedly.
     return NextResponse.json({ ok: true });
   }
 }
 
 // ── Helpers ──────────────────────────────────────────────────
 
-function extractText(message: WhatsAppMessage): string {
-  if (message.type === "text") return message.text?.body?.trim() ?? "";
-  // Interactive replies (buttons / list) carry their title.
+function parseMessage(message: WhatsAppMessage): { text: string; interactiveId: string | null } {
+  if (message.type === "text") {
+    return { text: message.text?.body?.trim() ?? "", interactiveId: null };
+  }
   if (message.type === "interactive") {
-    return (
-      message.interactive?.button_reply?.title ??
-      message.interactive?.list_reply?.title ??
-      ""
-    ).trim();
+    const reply = message.interactive?.button_reply ?? message.interactive?.list_reply;
+    return { text: reply?.title?.trim() ?? "", interactiveId: reply?.id ?? null };
   }
-  if (message.type === "button") return message.button?.text?.trim() ?? "";
-  return "";
+  if (message.type === "button") {
+    return { text: message.button?.text?.trim() ?? "", interactiveId: null };
+  }
+  return { text: "", interactiveId: null };
 }
 
-async function sendWhatsApp(
-  phoneNumberId: string,
-  token: string,
-  to: string,
-  body: string
-): Promise<void> {
-  const res = await fetch(
-    `https://graph.facebook.com/${GRAPH_VERSION}/${phoneNumberId}/messages`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        recipient_type: "individual",
-        to,
-        type: "text",
-        text: { preview_url: false, body: body.slice(0, 4096) },
-      }),
-    }
-  );
-  if (!res.ok) {
-    console.error("[whatsapp] send failed:", res.status, (await res.text()).slice(0, 300));
-  }
-}
-
-// Minimal typed shape of the Supabase client we use here.
 type Db = NonNullable<ReturnType<typeof getSupabaseAdmin>>;
 
 async function alreadyHandled(db: Db, waMessageId: string): Promise<boolean> {
@@ -213,22 +218,18 @@ async function recordMessage(
   content: string,
   waMessageId: string | null
 ): Promise<void> {
-  await db
-    .from("whatsapp_messages")
-    .insert({ phone, role, content, wa_message_id: waMessageId });
+  await db.from("whatsapp_messages").insert({ phone, role, content, wa_message_id: waMessageId });
 }
 
 // ── Meta webhook payload types (only the fields we read) ─────
+type InteractiveReply = { id?: string; title?: string };
 type WhatsAppMessage = {
   id: string;
   from: string;
   type?: string;
   text?: { body?: string };
   button?: { text?: string };
-  interactive?: {
-    button_reply?: { title?: string };
-    list_reply?: { title?: string };
-  };
+  interactive?: { button_reply?: InteractiveReply; list_reply?: InteractiveReply };
 };
 
 type WhatsAppWebhook = {
