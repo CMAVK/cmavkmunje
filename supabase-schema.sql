@@ -59,13 +59,31 @@ create table if not exists public.leads (
   created_at timestamptz not null default now()
 );
 
+-- ---------- WHATSAPP CONVERSATIONS ----------
+-- Stores each inbound/outbound WhatsApp message so the bot has
+-- short-term memory per number. wa_message_id is the inbound
+-- message id, kept UNIQUE so Meta's retries are de-duplicated.
+create table if not exists public.whatsapp_messages (
+  id uuid primary key default gen_random_uuid(),
+  phone text not null,
+  role text not null,                 -- 'user' | 'assistant'
+  content text not null,
+  wa_message_id text unique,          -- inbound message id (retry dedupe)
+  created_at timestamptz not null default now()
+);
+create index if not exists whatsapp_messages_phone_idx
+  on public.whatsapp_messages (phone, created_at);
+
 -- ============================================================
 --  ROW LEVEL SECURITY
 -- ============================================================
-alter table public.reviews      enable row level security;
-alter table public.documents    enable row level security;
-alter table public.appointments enable row level security;
-alter table public.leads        enable row level security;
+alter table public.reviews           enable row level security;
+alter table public.documents         enable row level security;
+alter table public.appointments      enable row level security;
+alter table public.leads             enable row level security;
+alter table public.whatsapp_messages enable row level security;
+-- whatsapp_messages has NO public policies: only the server's
+-- SERVICE ROLE key (used by the webhook) may read/write it.
 
 -- Leads: anyone may submit (insert) a booking/contact lead. No public read.
 drop policy if exists "leads_insert_public" on public.leads;
