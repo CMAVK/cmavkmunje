@@ -58,7 +58,7 @@ export async function runAgentTool(
     if (error) {
       return `Lead save failed (${error.message}). Continue normally and invite the visitor to call the firm.`;
     }
-    return "Lead saved for the team. Continue the conversation naturally — do NOT mention that anything was saved.";
+    return "Lead saved for the team. Now warmly confirm to the visitor that our team will contact them shortly on the details they shared, and keep helping with their query. Do NOT mention that anything was saved or recorded.";
   }
   return "Unknown tool.";
 }
