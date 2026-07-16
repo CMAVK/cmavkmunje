@@ -39,3 +39,13 @@ git push           # Vercel auto-deploys to cmavkmunje.com
 > Reminder: this site gives *general guidance*. The disclaimer (current as of
 > `lastReviewed`) is shown on the footer, Resources and Tools pages. Keep it honest
 > by updating `lastReviewed` whenever you review the content.
+
+## Teaching the AI assistant (knowledge folder)
+
+The VKM AI chatbot (website + WhatsApp) answers from a retrieval-based knowledge
+base built from `src/lib/site.ts` content **plus every `.md`/`.txt` file in
+[`/knowledge`](knowledge/README.md)**. To teach it something new, drop a file in
+`/knowledge` and deploy — `npm run build` regenerates `src/lib/knowledge-data.ts`
+automatically (or run `npm run knowledge` manually). Retrieval logic lives in
+`src/lib/knowledge.ts`; the persona/prompt in `src/lib/vkmBrain.ts`.
+Only put content that is safe for CLIENTS to read — this feeds the public bot.

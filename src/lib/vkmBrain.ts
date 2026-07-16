@@ -12,7 +12,8 @@
 //  the bot's behaviour across every channel at once.
 // ============================================================
 
-import { faqs, serviceCategories, dueDates, site, disclaimer } from "@/lib/site";
+import { serviceCategories, site, disclaimer } from "@/lib/site";
+import { retrieveKnowledge } from "@/lib/knowledge";
 
 // Model is configurable via env; Haiku is fast and cost-effective for
 // a high-volume client assistant. Override with CHAT_MODEL if needed.
@@ -24,14 +25,17 @@ export type ChatMessage = { role: "user" | "assistant"; content: string };
 // ── System prompt ────────────────────────────────────────────
 // `channel` lets us tweak formatting: WhatsApp has no rich markdown,
 // so there we keep replies plain-text and a little shorter.
-export function buildSystemPrompt(channel: ChatChannel = "web"): string {
+// `query` (the visitor's recent messages) drives knowledge retrieval:
+// instead of dumping every FAQ, we include only the site content and
+// firm documents most relevant to what was actually asked.
+export function buildSystemPrompt(channel: ChatChannel = "web", query = ""): string {
   const services = serviceCategories
     .map((s) => `- ${s.title}: ${s.items.join(", ")}`)
     .join("\n");
 
-  const knowledge = faqs.map((f) => `Q: ${f.q}\nA: ${f.a}`).join("\n\n");
-
-  const due = dueDates.map((d) => `- ${d.date}: ${d.task} (${d.cat})`).join("\n");
+  const knowledge = retrieveKnowledge(query)
+    .map((c) => `### ${c.title}\n${c.text}`)
+    .join("\n\n");
 
   const formatting =
     channel === "whatsapp"
@@ -91,10 +95,7 @@ End relevant conversations warmly, inviting the client to call +91 ${site.contac
 FIRM SERVICES:
 ${services}
 
-KEY STATUTORY DUE DATES (confirm current year before relying):
-${due}
-
-FIRM KNOWLEDGE BASE (use as your primary reference):
+FIRM KNOWLEDGE BASE (selected for this conversation — use as your primary reference; if the answer isn't covered here, give general professional guidance and suggest contacting the firm):
 ${knowledge}`;
 }
 
@@ -109,6 +110,14 @@ export async function callClaude(
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
 
+  // Retrieve knowledge against the visitor's two most recent messages,
+  // so follow-ups ("and the due date?") keep the earlier topic's context.
+  const query = messages
+    .filter((m) => m.role === "user")
+    .slice(-2)
+    .map((m) => m.content)
+    .join(" ");
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -119,7 +128,7 @@ export async function callClaude(
     body: JSON.stringify({
       model: MODEL,
       max_tokens: opts.maxTokens ?? 700,
-      system: buildSystemPrompt(opts.channel ?? "web"),
+      system: buildSystemPrompt(opts.channel ?? "web", query),
       messages,
     }),
   });

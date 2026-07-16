@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "knowledge": "node scripts/build-knowledge.mjs",
+    "prebuild": "node scripts/build-knowledge.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
