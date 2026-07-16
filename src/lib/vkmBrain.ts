@@ -14,6 +14,7 @@
 
 import { serviceCategories, site, disclaimer } from "@/lib/site";
 import { retrieveKnowledge } from "@/lib/knowledge";
+import { agentTools, runAgentTool } from "@/lib/agentTools";
 
 // Model is configurable via env; Haiku is fast and cost-effective for
 // a high-volume client assistant. Override with CHAT_MODEL if needed.
@@ -76,6 +77,25 @@ ${formatting}
 
 LEAD QUALIFICATION:
 When a visitor shows real interest, naturally collect (one or two at a time, not as a form): name, business/company, industry, mobile, email, city, service required, approximate turnover, GST status, and a preferred meeting time. Offer a video meeting, phone consultation or office visit.
+As soon as you have their name AND a mobile number or email, call the save_lead tool with everything you know so far. Do this SILENTLY — never mention saving, recording, databases or tools to the visitor.
+
+DOCUMENTS FROM CLIENTS:
+${channel === "whatsapp"
+  ? `Clients can send documents securely at ${site.url}/upload — share that link whenever someone mentions sending papers/files.`
+  : `Clients can attach documents right here in this chat using the paperclip (📎) button next to the message box, or at ${site.url}/upload. Mention the paperclip whenever someone wants to send/share papers or files. When you see a message noting documents were attached, thank them and confirm the team will review and respond.`}
+
+PERSONALIZED CHECKLISTS:
+Happily prepare tailored checklists — e.g. exact documents needed for their GST registration, ITR, company incorporation, loan proposal — adapted to the facts they share (entity type, state, situation).
+
+DOCUMENT DRAFTING — STRICT PROFESSIONAL RULES:
+You MAY draft general-purpose business documents on request: authorization letters, declarations, simple board-resolution formats, rent receipt formats, engagement outlines, basic agreements outlines, HR letters and similar.
+Every draft MUST follow ALL of these rules:
+1. Begin with the line: "📄 DRAFT — for reference only. Please have it reviewed by V K Munje & Company before use."
+2. Use [square-bracket placeholders] for any fact you don't know ([Name], [Date], [Amount], [GSTIN]).
+3. NEVER sign as, or include, the firm's name, CMA membership number, UDIN, seal, letterhead or any signature block of the firm or its partners.
+4. NEVER produce certificates or attestations of any kind (net-worth, turnover, cost audit, stock, utilization or similar) — these legally require a practising professional's signature. Politely explain this and invite a consultation.
+5. For replies to statutory notices (Income-tax, GST, ROC, PF/ESIC): provide ONLY a structured outline of the points to cover and documents to gather — never a final, submission-ready reply. Say the firm must review the actual notice first, and collect their contact details.
+6. After any draft, remind the client the firm can prepare the final, professionally vetted version.
 
 FEES — IMPORTANT:
 Never quote final professional fees. If asked, say: "Professional fees depend on the scope, complexity, timelines and documentation involved. Please contact our office for a customised quotation."
@@ -118,28 +138,60 @@ export async function callClaude(
     .map((m) => m.content)
     .join(" ");
 
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: opts.maxTokens ?? 700,
-      system: buildSystemPrompt(opts.channel ?? "web", query),
-      messages,
-    }),
-  });
+  const channel = opts.channel ?? "web";
+  const system = buildSystemPrompt(channel, query);
 
-  if (!res.ok) {
-    const detail = await res.text();
-    throw new Error(`Anthropic API ${res.status}: ${detail.slice(0, 200)}`);
+  // Agentic loop: the model may call tools (e.g. save_lead) before it
+  // produces its final reply. Bounded so a misbehaving loop can't run away.
+  type ContentBlock =
+    | { type: "text"; text: string }
+    | { type: "tool_use"; id: string; name: string; input: Record<string, unknown> };
+  const convo: Array<{ role: string; content: unknown }> = [...messages];
+  let lastText = "";
+
+  for (let turn = 0; turn < 4; turn++) {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: opts.maxTokens ?? 700,
+        system,
+        messages: convo,
+        tools: agentTools,
+      }),
+    });
+
+    if (!res.ok) {
+      const detail = await res.text();
+      throw new Error(`Anthropic API ${res.status}: ${detail.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    const blocks: ContentBlock[] = Array.isArray(data.content) ? data.content : [];
+    const text = blocks
+      .filter((b): b is Extract<ContentBlock, { type: "text" }> => b.type === "text")
+      .map((b) => b.text)
+      .join("\n")
+      .trim();
+    if (text) lastText = text;
+
+    if (data.stop_reason !== "tool_use") return lastText;
+
+    const results = [];
+    for (const block of blocks) {
+      if (block.type === "tool_use") {
+        const output = await runAgentTool(block.name, block.input, { channel });
+        results.push({ type: "tool_result", tool_use_id: block.id, content: output });
+      }
+    }
+    convo.push({ role: "assistant", content: blocks });
+    convo.push({ role: "user", content: results });
   }
 
-  const data = await res.json();
-  return Array.isArray(data.content) && data.content[0]?.type === "text"
-    ? (data.content[0].text as string)
-    : "";
+  return lastText;
 }
