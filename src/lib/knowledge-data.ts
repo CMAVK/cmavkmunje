@@ -27,5 +27,225 @@ export const firmDocs: FirmDoc[] = [
     "id": "doc:about-the-firm.md:4",
     "title": "About V K Munje & Company — How to engage the firm",
     "text": "New clients can book a consultation from the website (Book Consultation page),\ncall or WhatsApp the office, or simply describe their requirement in this chat —\nthe team responds during office hours. Existing clients can upload documents\nthrough the Client Portal on the website."
+  },
+  {
+    "id": "doc:company-llp-registration.md:0",
+    "title": "Company and LLP Registration — Process and Documents — Choosing the right structure",
+    "text": "- **Proprietorship** — simplest, no separate legal identity; suits very small businesses.\n- **Partnership firm** — easy to start, partners personally liable.\n- **LLP** — limited liability with lighter compliance than a company; suits professionals and small businesses.\n- **Private Limited Company** — separate legal entity, preferred for startups seeking funding, ESOPs or scale.\n\nWe discuss turnover plans, funding, liability and tax impact before recommending a structure."
+  },
+  {
+    "id": "doc:company-llp-registration.md:1",
+    "title": "Company and LLP Registration — Process and Documents — Documents required (directors/partners)",
+    "text": "- PAN and Aadhaar of each director/partner\n- Photograph, mobile number and email\n- Identity proof (passport/voter ID/driving licence)\n- Address proof (bank statement/utility bill, recent)\n- Registered office proof: utility bill + rent agreement and owner NOC (if rented)"
+  },
+  {
+    "id": "doc:company-llp-registration.md:2",
+    "title": "Company and LLP Registration — Process and Documents — Process — Private Limited Company (SPICe+)",
+    "text": "1. Digital Signatures (DSC) for directors\n2. Name reservation (two proposed names)\n3. SPICe+ filing — incorporation, PAN, TAN, EPFO/ESIC, professional tax and bank account in one integrated form\n4. Certificate of Incorporation with CIN\n\nTypical timeline is about 7–15 working days depending on name approval and\nMCA processing."
+  },
+  {
+    "id": "doc:company-llp-registration.md:3",
+    "title": "Company and LLP Registration — Process and Documents — Process — LLP (FiLLiP)",
+    "text": "Similar flow: DSC → name reservation → FiLLiP incorporation → LLP agreement\nfiling within 30 days of incorporation."
+  },
+  {
+    "id": "doc:company-llp-registration.md:4",
+    "title": "Company and LLP Registration — Process and Documents — After incorporation — don't miss these",
+    "text": "- Company: INC-20A (commencement of business) within 180 days, first auditor\n  appointment within 30 days, share certificates, statutory registers\n- Every year: AOC-4, MGT-7/7A (company) or Form 8 and Form 11 (LLP), DIR-3 KYC for every director\n- Missing annual filings attracts per-day additional fees and can lead to\n  director disqualification — we maintain a compliance calendar for every\n  entity we incorporate."
+  },
+  {
+    "id": "doc:gst-registration.md:0",
+    "title": "GST Registration — Process and Documents — Who needs GST registration",
+    "text": "GST registration is generally required when aggregate turnover crosses the\nthreshold (commonly ₹40 lakh for goods and ₹20 lakh for services in most\nstates — lower in special-category states), for anyone making inter-state\ntaxable supplies, e-commerce sellers, and persons liable under reverse charge.\nVoluntary registration is also possible and often useful for claiming Input\nTax Credit and dealing with corporate customers. We confirm applicability for\neach client's exact situation before applying."
+  },
+  {
+    "id": "doc:gst-registration.md:1",
+    "title": "GST Registration — Process and Documents — Documents required — Proprietorship",
+    "text": "- PAN and Aadhaar of the proprietor\n- Photograph of the proprietor\n- Proof of business address: electricity bill / rent agreement + NOC from owner / ownership document\n- Bank details: cancelled cheque or bank statement\n- Mobile number and email (OTP verification)"
+  },
+  {
+    "id": "doc:gst-registration.md:2",
+    "title": "GST Registration — Process and Documents — Documents required — Partnership / LLP",
+    "text": "- PAN of the firm/LLP and of all partners\n- Partnership deed / LLP agreement and Certificate of Incorporation (LLP)\n- Aadhaar and photograph of authorised partner\n- Business address proof and bank details as above\n- Letter of authorisation for the authorised signatory"
+  },
+  {
+    "id": "doc:gst-registration.md:3",
+    "title": "GST Registration — Process and Documents — Documents required — Private Limited Company",
+    "text": "- PAN of the company, Certificate of Incorporation, MOA/AOA\n- PAN, Aadhaar and photographs of directors\n- Board resolution / authorisation letter for the authorised signatory\n- Registered office address proof and bank details\n- Digital Signature (DSC) of the authorised signatory"
+  },
+  {
+    "id": "doc:gst-registration.md:4",
+    "title": "GST Registration — Process and Documents — Process and timeline",
+    "text": "1. We collect and verify your documents.\n2. Application is filed on the GST portal with Aadhaar authentication.\n3. The department may approve directly or raise a clarification; physical\n   verification of premises is possible in some cases.\n4. On approval, GSTIN and registration certificate are issued — typically\n   within about 7 working days when documents are in order, though department\n   timelines can vary."
+  },
+  {
+    "id": "doc:gst-registration.md:5",
+    "title": "GST Registration — Process and Documents — After registration",
+    "text": "Return filing obligations start immediately (monthly/quarterly), invoice\nformat must be GST-compliant, and e-invoicing/e-way bill rules may apply\ndepending on turnover. We set up the complete post-registration compliance\ncalendar for every client we register."
+  },
+  {
+    "id": "doc:how-we-work-client-onboarding.md:0",
+    "title": "Working With V K Munje & Company — What To Expect — How to engage us",
+    "text": "1. **Reach out** — this chat, the Book Consultation page, phone/WhatsApp\n   (+91 99220 99970) or an office visit (Mon–Sat, 10 AM – 7 PM).\n2. **Free initial discussion** — we understand your requirement and explain\n   the scope, documents needed and expected timeline.\n3. **Quotation** — professional fees depend on scope and complexity; you get\n   a clear quotation before any work starts, so there are never surprises.\n4. **Document collection** — send documents through this chat's 📎 button,\n   the website's Upload Documents page, WhatsApp or email.\n5. **Execution and updates** — we keep you informed at each milestone and\n   share every acknowledgment/filing proof for your records."
+  },
+  {
+    "id": "doc:how-we-work-client-onboarding.md:1",
+    "title": "Working With V K Munje & Company — What To Expect — Sending us documents",
+    "text": "- In this chat: click the 📎 paperclip, attach files, add your name and mobile\n- On the website: cmavkmunje.com/upload\n- Clients with portal access can log in and upload from their dashboard\n\nPDF, Excel, Word, ZIP and images are accepted, up to 25 MB per file."
+  },
+  {
+    "id": "doc:how-we-work-client-onboarding.md:2",
+    "title": "Working With V K Munje & Company — What To Expect — Confidentiality",
+    "text": "Your information is handled with strict confidentiality, integrity and\nprofessional data-privacy standards — the same duty of care that applies to\nevery ICMAI-registered practice."
+  },
+  {
+    "id": "doc:how-we-work-client-onboarding.md:3",
+    "title": "Working With V K Munje & Company — What To Expect — Ongoing clients",
+    "text": "For retainer clients we maintain a compliance calendar with proactive\nreminders before every due date — GST, TDS, income tax, ROC and labour law —\nso nothing is ever missed."
+  },
+  {
+    "id": "doc:income-tax-return-filing.md:0",
+    "title": "Income Tax Return (ITR) Filing — Documents and Process — Who should file",
+    "text": "Filing is compulsory when income exceeds the basic exemption limit, and in\nseveral other cases regardless of income — e.g. foreign travel or electricity\nexpenses above prescribed limits, large deposits, foreign assets, or when TDS\nhas been deducted and a refund is due. Even when not compulsory, filing helps\nwith loans, visas and refunds."
+  },
+  {
+    "id": "doc:income-tax-return-filing.md:1",
+    "title": "Income Tax Return (ITR) Filing — Documents and Process — Documents we need from you — Salaried",
+    "text": "- PAN and Aadhaar\n- Form 16 from employer(s)\n- Salary slips (if Form 16 is pending)\n- Interest certificates / bank statements\n- Investment and deduction proofs (LIC, PPF, ELSS, mediclaim, home-loan interest certificate)\n- Details of any share/mutual-fund sales (capital gains statements from broker)\n- AIS/26AS — we download and reconcile these ourselves"
+  },
+  {
+    "id": "doc:income-tax-return-filing.md:2",
+    "title": "Income Tax Return (ITR) Filing — Documents and Process — Documents we need — Business / Profession",
+    "text": "- Bank statements for the full year (all accounts)\n- Sales and purchase details / books of account\n- GST returns filed during the year (we reconcile turnover)\n- Loan statements, asset purchase details\n- Previous year's ITR and financial statements"
+  },
+  {
+    "id": "doc:income-tax-return-filing.md:3",
+    "title": "Income Tax Return (ITR) Filing — Documents and Process — Old vs new tax regime",
+    "text": "The right regime depends entirely on your numbers. We compute tax both ways\nfor every client and recommend the one that minimises tax while keeping your\ninvestment goals in mind."
+  },
+  {
+    "id": "doc:income-tax-return-filing.md:4",
+    "title": "Income Tax Return (ITR) Filing — Documents and Process — Due dates (typical — confirm current year with us)",
+    "text": "- Individuals and non-audit cases: 31 July\n- Audit cases: 31 October\n- Belated/revised returns: generally up to 31 December of the assessment year\n\nLate filing attracts fees and interest, and certain losses cannot be carried\nforward — filing on time always pays."
+  },
+  {
+    "id": "doc:income-tax-return-filing.md:5",
+    "title": "Income Tax Return (ITR) Filing — Documents and Process — Our process",
+    "text": "1. Share documents (chat upload, client portal, WhatsApp or office visit).\n2. We prepare the computation and share it for your confirmation, including\n   regime comparison and refund/tax payable position.\n3. Return is filed and e-verified; you receive the acknowledgment (ITR-V)\n   and a copy of the computation for your records."
+  },
+  {
+    "id": "doc:labour-law-pf-esic.md:0",
+    "title": "Labour Law Compliance — PF, ESIC and Professional Tax — When PF registration is mandatory",
+    "text": "Establishments with 20 or more employees must register under EPF. Voluntary\nregistration is possible below that. Contribution applies to employees within\nthe prescribed wage ceiling (higher-paid employees can be covered by choice)."
+  },
+  {
+    "id": "doc:labour-law-pf-esic.md:1",
+    "title": "Labour Law Compliance — PF, ESIC and Professional Tax — When ESIC registration is required",
+    "text": "Generally applies to establishments with 10 or more employees (thresholds\nvary by state and establishment type) where employees earn up to ₹21,000 per\nmonth (higher for employees with disability). It funds medical care and cash\nbenefits for employees."
+  },
+  {
+    "id": "doc:labour-law-pf-esic.md:2",
+    "title": "Labour Law Compliance — PF, ESIC and Professional Tax — Professional Tax (Maharashtra)",
+    "text": "Employers must register (PTRC/PTEC), deduct professional tax from salaries\nas per the slab, and pay the employer's own enrolment tax. Due dates depend\non liability size; annual returns apply."
+  },
+  {
+    "id": "doc:labour-law-pf-esic.md:3",
+    "title": "Labour Law Compliance — PF, ESIC and Professional Tax — Documents needed for PF/ESIC registration",
+    "text": "- PAN of the entity and Certificate of Incorporation / registration proof\n- Address proof of the establishment\n- Details and KYC of employer/directors/partners\n- Employee list with date of joining, salary and Aadhaar\n- Bank details and digital signature"
+  },
+  {
+    "id": "doc:labour-law-pf-esic.md:4",
+    "title": "Labour Law Compliance — PF, ESIC and Professional Tax — Ongoing monthly compliance",
+    "text": "- PF: contribution deposit and ECR filing by the 15th of the following month\n- ESIC: contribution by the 15th of the following month\n- PT: deduction and payment per Maharashtra slab and schedule"
+  },
+  {
+    "id": "doc:labour-law-pf-esic.md:5",
+    "title": "Labour Law Compliance — PF, ESIC and Professional Tax — Our labour-law division",
+    "text": "We handle registrations, monthly filings, new-joinee/exit updates (UAN, ESIC\nIP), inspections and notices, and full payroll compliance so you never face\nlast-minute penalties."
+  },
+  {
+    "id": "doc:msme-udyam-startup.md:0",
+    "title": "MSME (Udyam), Startup India and Other Registrations — Udyam (MSME) registration",
+    "text": "Free, online and Aadhaar-based. Classification is by investment in plant &\nmachinery and turnover (micro, small, medium). Benefits include priority\nlending, protection against delayed payments (buyers must pay MSMEs within\n45 days), interest subvention schemes, and preference in government tenders.\n\n**Documents:** Aadhaar of proprietor/authorised signatory, PAN, GSTIN (where\napplicable) and basic business details. Usually completed the same day."
+  },
+  {
+    "id": "doc:msme-udyam-startup.md:1",
+    "title": "MSME (Udyam), Startup India and Other Registrations — Startup India (DPIIT) recognition",
+    "text": "For eligible private limited companies, LLPs or registered partnerships less\nthan 10 years old with turnover under ₹100 crore, working on innovation or\nimprovement of products/services. Benefits include tax exemption under\nSection 80-IAC (subject to approval), easier public procurement, self\ncertification under labour laws and faster IP processing.\n\n**Documents:** Certificate of Incorporation, PAN, brief write-up on the\ninnovative nature of the business, website/pitch deck if available."
+  },
+  {
+    "id": "doc:msme-udyam-startup.md:2",
+    "title": "MSME (Udyam), Startup India and Other Registrations — Other registrations we handle",
+    "text": "- **Shop & Establishment** (Maharashtra) — mandatory for most offices/shops\n- **FSSAI** — food businesses\n- **IEC** — import/export code for cross-border trade\n- **Professional Tax** — PTRC/PTEC\n- **RERA** — real-estate projects and agents (MahaRERA)\n- **Trademark** — brand protection\n\nTell us your business activity and we'll map every registration you need to\noperate legally, in the right order."
+  },
+  {
+    "id": "doc:notices-and-litigation.md:0",
+    "title": "Received a Tax Notice? What To Do — First — don't panic, don't ignore",
+    "text": "Most notices are routine (mismatch, verification, information requests) and\nare resolved with a proper, timely reply. Ignoring a notice is the costliest\nmistake — deadlines pass quickly and ex-parte orders or penalties can follow."
+  },
+  {
+    "id": "doc:notices-and-litigation.md:1",
+    "title": "Received a Tax Notice? What To Do — Steps to take immediately",
+    "text": "1. Note the **deadline** on the notice — everything is planned around it.\n2. Do not reply in a hurry or admit anything without professional review.\n3. Send us a copy right away — via this chat's 📎 attach button, the website\n   upload page, WhatsApp or email.\n4. Gather the underlying records (returns, invoices, bank statements) —\n   we'll tell you exactly which ones once we read the notice."
+  },
+  {
+    "id": "doc:notices-and-litigation.md:2",
+    "title": "Received a Tax Notice? What To Do — Common notice types we handle",
+    "text": "- **Income tax:** 143(1) intimations and mismatches, scrutiny/assessment\n  notices, reassessment, TDS demands, penalty proceedings, rectification and appeals\n- **GST:** GSTR mismatch (ASMT-10), show-cause notices/demands, ITC-related\n  queries, registration show-cause (REG-17), e-way bill detentions, refunds and appeals\n- **MCA/ROC:** non-filing notices, strike-off notices, director KYC defaults\n- **PF/ESIC:** inspections, damages and interest proceedings"
+  },
+  {
+    "id": "doc:notices-and-litigation.md:3",
+    "title": "Received a Tax Notice? What To Do — How we work on a notice",
+    "text": "We study the notice and your records, explain your actual exposure in plain\nlanguage, prepare a professionally drafted reply with supporting documents,\nfile it and represent you before the authority where needed — one desk for\nthe entire lifecycle until closure."
+  },
+  {
+    "id": "doc:notices-and-litigation.md:4",
+    "title": "Received a Tax Notice? What To Do — What it costs",
+    "text": "Fees depend on the notice type and complexity — after reading your notice we\ngive you a clear scope and quotation before starting."
+  },
+  {
+    "id": "doc:project-report-bank-loan.md:0",
+    "title": "Project Reports, CMA Data and Bank Loans — What we prepare",
+    "text": "- **Project reports / DPR** for term loans and new units\n- **CMA data** in the bank's prescribed format for cash credit / OD limits and renewals\n- **Loan proposals** with financial projections, DSCR and ratio analysis\n- **Sensitivity analysis** showing the bank the proposal survives downside scenarios\n\nAs Cost Accountants, bankable financial modelling is a core strength of the firm."
+  },
+  {
+    "id": "doc:project-report-bank-loan.md:1",
+    "title": "Project Reports, CMA Data and Bank Loans — Documents we need from you",
+    "text": "- Last 2–3 years' financial statements and ITRs (for existing businesses)\n- Last 6–12 months' bank statements\n- GST returns for the recent period\n- Quotations for machinery/assets to be purchased (for term loans)\n- Existing loan sanction letters and repayment track record\n- KYC of promoters and the entity\n- Brief note on the business plan — what, where, how much, by when\n\nFor brand-new ventures we build projections from your plan and industry benchmarks."
+  },
+  {
+    "id": "doc:project-report-bank-loan.md:2",
+    "title": "Project Reports, CMA Data and Bank Loans — Government schemes we work with",
+    "text": "- **Mudra loans** (up to ₹10 lakh, no collateral)\n- **PMEGP** (subsidy-linked for new micro enterprises)\n- **CGTMSE** (collateral-free credit guarantee for MSMEs)\n- **Stand-Up India** and Maharashtra state schemes (CMEGP)\n\nEligibility depends on the promoter and project profile — share your plan and\nwe'll identify the best-fit scheme."
+  },
+  {
+    "id": "doc:project-report-bank-loan.md:3",
+    "title": "Project Reports, CMA Data and Bank Loans — What bankers scrutinise",
+    "text": "Realistic revenue projections, a healthy Debt Service Coverage Ratio,\njustified working-capital assessment, promoter contribution (margin), and\nconsistency between projections, GST data and bank statements. Our reports\nare built to answer these questions before the banker asks them."
+  },
+  {
+    "id": "doc:tds-tcs-compliance.md:0",
+    "title": "TDS and TCS — Obligations, Due Dates and Documents — When TDS applies (common situations)",
+    "text": "- Salary payments to employees\n- Rent above the prescribed annual limit\n- Payments to contractors and sub-contractors\n- Professional or technical fees\n- Interest, commission and brokerage\n- Purchase of property above ₹50 lakh (buyer must deduct)\n- Purchase of goods above the prescribed limit for larger buyers\n\nRates and thresholds change with the law — we confirm the exact section and\nrate for each payment type before you deduct."
+  },
+  {
+    "id": "doc:tds-tcs-compliance.md:1",
+    "title": "TDS and TCS — Obligations, Due Dates and Documents — Key deadlines (typical pattern — confirm current dates with us)",
+    "text": "- Deposit of TDS deducted: by the 7th of the following month (30 April for March)\n- Quarterly TDS returns: within the month following each quarter\n- TDS certificates (Form 16/16A): due after each quarterly return; Form 16 annually for salary"
+  },
+  {
+    "id": "doc:tds-tcs-compliance.md:2",
+    "title": "TDS and TCS — Obligations, Due Dates and Documents — Consequences of default",
+    "text": "Interest applies for late deduction and late deposit, late filing of returns\nattracts a per-day fee, and expense disallowance can increase your taxable\nincome. Timely compliance is far cheaper than regularisation."
+  },
+  {
+    "id": "doc:tds-tcs-compliance.md:3",
+    "title": "TDS and TCS — Obligations, Due Dates and Documents — What we need from you",
+    "text": "- TAN details (we can obtain TAN if you don't have one)\n- Monthly payment details: nature of payment, payee PAN, amount\n- Challan copies of taxes deposited\n- For salary TDS: employee declarations and investment proofs"
+  },
+  {
+    "id": "doc:tds-tcs-compliance.md:4",
+    "title": "TDS and TCS — Obligations, Due Dates and Documents — Our TDS service",
+    "text": "We compute monthly liability, remind you before deposit dates, file quarterly\nreturns, generate Form 16/16A, and handle any TDS notices or demand\nrectifications (TRACES)."
   }
 ];
