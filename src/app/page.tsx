@@ -27,7 +27,6 @@ export default function Home() {
     <>
       {/* Hero */}
       <section className="relative overflow-hidden bg-teal text-cream">
-        <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-gold/20 blur-3xl" />
         <div className="relative mx-auto max-w-7xl px-5 py-20 md:py-28">
           <div className="max-w-3xl animate-fade-up">
             <span className="inline-flex items-center gap-2 rounded-full border border-gold/40 bg-white/5 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.18em] text-gold-light">
