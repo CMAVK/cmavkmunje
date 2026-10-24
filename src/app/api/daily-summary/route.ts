@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 import { site } from "@/lib/site";
@@ -5,15 +6,29 @@ import { site } from "@/lib/site";
 // Daily practice digest — run by Vercel Cron every evening (see vercel.json).
 // Collects the last 24h of leads and document uploads plus pending reviews,
 // and emails a summary to the firm via Formspree. Sends nothing on quiet
-// days (unless ?force=<key> is used for testing) to conserve the Formspree
+// days (unless ?force=1 is used for testing) to conserve the Formspree
 // free-tier quota.
-const FORCE_KEY = "vkm-summary-3f8a12";
+//
+// Only callers holding CRON_SECRET may run it. Vercel Cron sends it
+// automatically as "Authorization: Bearer <CRON_SECRET>" once the env var is
+// set on the project; without the env var the endpoint refuses everyone.
 
 type Lead = { name: string | null; phone: string | null; service: string | null; source: string };
 type Doc = { client_name: string; phone: string | null; file_name: string; category: string };
 
+function isAuthorized(req: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return false;
+  const a = Buffer.from(req.headers.get("authorization") || "");
+  const b = Buffer.from(`Bearer ${secret}`);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 export async function GET(req: Request) {
-  const force = new URL(req.url).searchParams.get("force") === FORCE_KEY;
+  if (!isAuthorized(req)) {
+    return NextResponse.json({ ok: false, reason: "unauthorized" }, { status: 401 });
+  }
+  const force = new URL(req.url).searchParams.get("force") === "1";
 
   const db = getSupabaseAdmin();
   if (!db) return NextResponse.json({ ok: false, reason: "not configured" }, { status: 500 });

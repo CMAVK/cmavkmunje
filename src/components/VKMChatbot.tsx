@@ -163,6 +163,8 @@ export default function VKMChatbot() {
 
       if (res.ok && data.configured && data.reply) {
         setMessages((m) => [...m, { from: "bot", text: data.reply }]);
+      } else if ((res.status === 429 || res.status === 413) && data.error) {
+        setMessages((m) => [...m, { from: "bot", text: data.error, escalate: true }]);
       } else {
         // Fallback to built-in FAQ matcher.
         const answer = findFaqAnswer(q);
@@ -342,6 +344,7 @@ export default function VKMChatbot() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
+              maxLength={2000}
               placeholder="Ask a compliance question…"
               className="flex-1 rounded-full border border-black/10 bg-cream px-4 py-2 text-sm text-ink outline-none focus:border-teal"
             />

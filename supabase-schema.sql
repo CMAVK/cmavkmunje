@@ -134,3 +134,7 @@ drop policy if exists "documents_upload_public" on storage.objects;
 create policy "documents_upload_public" on storage.objects
   for insert to anon, authenticated
   with check (bucket_id = 'documents');
+
+-- Enforce the 25 MB per-file limit on the server too. The upload forms only
+-- check size in the visitor's browser, which a script can skip.
+update storage.buckets set file_size_limit = 26214400 where id = 'documents';
