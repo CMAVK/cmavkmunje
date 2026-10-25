@@ -61,11 +61,14 @@ alter table public.vkm_requests       enable row level security;
 alter table public.vkm_request_files  enable row level security;
 alter table public.vkm_request_events enable row level security;
 
--- Newer Supabase projects don't expose new tables to the API automatically.
--- Only the website's server role gets access; the public anon role gets none.
-grant all on table public.vkm_requests, public.vkm_request_files, public.vkm_request_events to service_role;
-grant usage, select on sequence public.vkm_request_events_id_seq to service_role;
-revoke all on table public.vkm_requests, public.vkm_request_files, public.vkm_request_events from anon, authenticated;
+-- Newer Supabase projects don't expose new tables to the API automatically,
+-- and the API only lists tables its roles hold grants on. Grant the usual
+-- Supabase roles; Row Level Security (on, with NO policies) still means the
+-- public anon key can neither read nor write a single row — only the
+-- website's server (service role, which bypasses RLS) can.
+grant select, insert, update, delete on table public.vkm_requests, public.vkm_request_files, public.vkm_request_events
+  to anon, authenticated, service_role;
+grant usage, select on sequence public.vkm_request_events_id_seq to anon, authenticated, service_role;
 
 -- Private bucket, 25 MB per file. No storage policies: uploads only work
 -- through one-time signed upload URLs the website hands out after the client
