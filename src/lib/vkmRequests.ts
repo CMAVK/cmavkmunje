@@ -93,11 +93,15 @@ interface Store {
 // Request records are small private JSON files in the same private bucket as
 // the uploads (under _meta/), read and written only with the service-role
 // key. This avoids depending on Supabase's Data API exposing new tables.
-//   _meta/requests/<id>.json      the request + its files
-//   _meta/tokens/<token_hash>.json -> { id }
-//   _meta/codes/<CLIENT_CODE>.json -> { id } of the newest request
-//   _meta/inbox/<id>.json          present while submitted and not yet collected
-//   _meta/events/<id>/<time>.json  audit trail
+//   _meta/requests/<id>/<version>.json  the request + its files; every change
+//                                       is a NEW version (never overwritten),
+//                                       because Supabase's storage cache can
+//                                       serve an old copy of an overwritten file
+//   _meta/tokens/<token_hash>.json      -> { id }   (written once)
+//   _meta/codes/<CODE>/<version>.json   -> { id }   newest request per client
+//   _meta/inbox/<id>.json               present while submitted, not collected
+//   _meta/events/<id>/<time>.json       audit trail
+// Listings are never cached, so "newest version" is always found by listing.
 type Rec = VkmRequest & { files: VkmFile[] };
 const META = "_meta";
 
@@ -121,8 +125,26 @@ function supabaseStore(): Store | null {
       { upsert: true, cacheControl: "0", contentType: "application/json" });
     if (error) throw new Error(error.message);
   }
-  const recPath = (id: string) => `${META}/requests/${id}.json`;
-  const loadRec = (id: string) => (/^[0-9a-f-]{36}$/i.test(id) ? getJson<Rec>(recPath(id)) : Promise.resolve(null));
+  // zero-padded time + random: names sort newest-last and never repeat
+  const version = () => `${String(Date.now()).padStart(15, "0")}-${crypto.randomBytes(4).toString("hex")}.json`;
+  async function newest(folder: string): Promise<string | null> {
+    const { data } = await bucket().list(folder, { limit: 100, sortBy: { column: "name", order: "desc" } });
+    const names = (data ?? []).map((o) => o.name).filter((n) => n.endsWith(".json")).sort().reverse();
+    return names[0] ? `${folder}/${names[0]}` : null;
+  }
+  async function loadRec(id: string): Promise<Rec | null> {
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return null;
+    const p = await newest(`${META}/requests/${id}`);
+    return p ? getJson<Rec>(p) : null;
+  }
+  async function saveRec(rec: Rec) {
+    const folder = `${META}/requests/${rec.id}`;
+    await putJson(`${folder}/${version()}`, rec);
+    // keep the last few versions only
+    const { data } = await bucket().list(folder, { limit: 100 });
+    const old = (data ?? []).map((o) => o.name).sort().reverse().slice(5);
+    if (old.length) await bucket().remove(old.map((n) => `${folder}/${n}`));
+  }
   const strip = (r: Rec): VkmRequest => {
     const { files: _files, ...rest } = r; // eslint-disable-line @typescript-eslint/no-unused-vars
     return rest;
@@ -142,16 +164,17 @@ function supabaseStore(): Store | null {
         status: "open", submitted_at: null, client_services: [], client_message: null, client_contact: {},
         synced_at: null, files: [],
       };
-      await putJson(recPath(rec.id), rec);
+      await saveRec(rec);
       await putJson(`${META}/tokens/${rec.token_hash}.json`, { id: rec.id });
-      await putJson(`${META}/codes/${rec.client_code.toUpperCase()}.json`, { id: rec.id });
+      await putJson(`${META}/codes/${rec.client_code.toUpperCase()}/${version()}`, { id: rec.id });
       return strip(rec);
     },
     async findRequest(by) {
       let id = by.id;
       if (!id && by.token_hash) id = (await getJson<{ id: string }>(`${META}/tokens/${by.token_hash}.json`))?.id;
       if (!id && by.client_code) {
-        id = (await getJson<{ id: string }>(`${META}/codes/${by.client_code.toUpperCase()}.json`))?.id;
+        const p = await newest(`${META}/codes/${by.client_code.toUpperCase()}`);
+        id = p ? (await getJson<{ id: string }>(p))?.id : undefined;
       }
       const rec = id ? await loadRec(id) : null;
       return rec ? strip(rec) : null;
@@ -160,7 +183,7 @@ function supabaseStore(): Store | null {
       const rec = await loadRec(id);
       if (!rec) throw new Error("request not found");
       const next = { ...rec, ...patch, id: rec.id } as Rec;
-      await putJson(recPath(id), next);
+      await saveRec(next);
       if ("status" in patch || "synced_at" in patch) await syncInbox(next);
     },
     async listRequests(f) {
@@ -181,7 +204,7 @@ function supabaseStore(): Store | null {
         ...f, id: `${rec.id}.${crypto.randomUUID()}`, uploaded_at: new Date().toISOString(), synced_at: null, confirmed: false,
       };
       rec.files = [...(rec.files || []), file];
-      await putJson(recPath(rec.id), rec);
+      await saveRec(rec);
       return file;
     },
     async listFiles(requestId) {
@@ -191,7 +214,7 @@ function supabaseStore(): Store | null {
       const rec = await loadRec(reqOfFile(id));
       if (!rec) return;
       rec.files = rec.files.map((x) => (x.id === id ? { ...x, ...patch, id } : x));
-      await putJson(recPath(rec.id), rec);
+      await saveRec(rec);
     },
     async deleteFiles(ids) {
       const byReq = new Map<string, Set<string>>();
@@ -200,7 +223,7 @@ function supabaseStore(): Store | null {
         const rec = await loadRec(rid);
         if (!rec) continue;
         rec.files = rec.files.filter((x) => !drop.has(x.id));
-        await putJson(recPath(rid), rec);
+        await saveRec(rec);
       }
     },
     async addEvent(requestId, event, ip, ua) {

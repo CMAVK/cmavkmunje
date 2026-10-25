@@ -16,7 +16,7 @@ export async function GET(req: Request) {
   let records = "not checked";
   if (bucket === "ok") {
     const stamp = new Date().toISOString();
-    const probe = "_meta/health.json";
+    const probe = `_meta/health/${Date.now()}.json`; // fresh name: never served from cache
     const { error: wErr } = await db.storage.from(BUCKET).upload(probe,
       new Blob([JSON.stringify({ stamp })], { type: "application/json" }), { upsert: true, cacheControl: "0" });
     if (wErr) records = `write failed: ${wErr.message}`;
@@ -24,6 +24,7 @@ export async function GET(req: Request) {
       const { data, error: rErr } = await db.storage.from(BUCKET).download(probe);
       const back = data ? JSON.parse(await data.text()).stamp : null;
       records = rErr ? `read failed: ${rErr.message}` : back === stamp ? "ok" : "stale read";
+      await db.storage.from(BUCKET).remove([probe]);
     }
   }
   return noStore({ ok: bucket === "ok" && records === "ok", project, bucket, records });
