@@ -11,7 +11,8 @@ export async function GET(req: Request) {
   const project = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/^https:\/\/([a-z0-9]+)\..*$/, "$1");
   const tables: Record<string, string> = {};
   for (const t of ["vkm_requests", "vkm_request_files", "vkm_request_events", "leads"]) {
-    const { error } = await db.from(t).select("*", { head: true, count: "exact" }).limit(1);
+    // a real GET: HEAD requests don't report "table not found" reliably
+    const { error } = await db.from(t).select("*").limit(1);
     tables[t] = error ? `${error.code || ""} ${error.message}`.trim() : "ok";
   }
   const { data: buckets, error: bErr } = await db.storage.listBuckets();
