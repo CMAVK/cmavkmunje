@@ -11,13 +11,16 @@ export async function POST(req: Request) {
   };
   const files = await store.listFiles(r.id);
   const confirmed = files.filter((f) => f.confirmed);
-  const services = (Array.isArray(body.services) ? body.services : [])
+  const picked = (Array.isArray(body.services) ? body.services : [])
     .map(String).filter((x) => r.services.includes(x));
+  // a service chosen earlier (intake form) stays unless the client picks again
+  const services = picked.length ? picked : (r.client_services || []);
   const message = String(body.message || "").trim().slice(0, 2000);
   if (!confirmed.length && !services.length && !message) {
     return noStore({ error: "Please upload at least one document, or tell us which service you need." }, { status: 400 });
   }
-  const contact: Record<string, string> = {};
+  // keep details given earlier (e.g. on the intake form); new ones override
+  const contact: Record<string, string> = { ...(r.client_contact || {}) };
   const phone = String(body.phone || "").replace(/[^\d+ ]/g, "").trim().slice(0, 20);
   const email = String(body.email || "").trim().slice(0, 120);
   if (phone) contact.phone = phone;

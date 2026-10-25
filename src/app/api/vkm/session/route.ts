@@ -9,7 +9,7 @@ export async function GET() {
   const files = (await store.listFiles(r.id)).filter((f) => f.confirmed);
   return noStore({
     client_name: r.client_name,
-    client_code: r.client_code,
+    client_code: r.intake_id ? null : r.client_code,
     title: r.title,
     documents: r.documents,
     services: r.services,

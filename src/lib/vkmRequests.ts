@@ -54,6 +54,25 @@ export type VkmRequest = {
   client_message: string | null;
   client_contact: Record<string, string>;
   synced_at: string | null;
+  intake_id?: string | null; // set when the request was started from a general intake link
+};
+
+// A general intake link (Link Intake): one link, many people. Each visitor
+// who fills in their details gets their own private request (intake_id set).
+export type VkmIntake = {
+  id: string;
+  token_hash: string;
+  title: string;
+  services: string[];
+  pin_hash: string | null;
+  pin_salt: string | null;
+  failed_attempts: number;
+  status: "open" | "locked" | "revoked";
+  expires_at: string;
+  max_submissions: number;
+  submissions: number;
+  created_by: string | null;
+  created_at: string;
 };
 
 export type VkmFile = {
@@ -72,6 +91,7 @@ export type VkmFile = {
 type NewRequest = Omit<VkmRequest, "id" | "created_at" | "failed_attempts" | "status" | "submitted_at" |
   "client_services" | "client_message" | "client_contact" | "synced_at">;
 type NewFile = Omit<VkmFile, "id" | "uploaded_at" | "synced_at" | "confirmed">;
+type NewIntake = Omit<VkmIntake, "id" | "created_at" | "failed_attempts" | "status" | "submissions">;
 
 interface Store {
   insertRequest(r: NewRequest): Promise<VkmRequest>;
@@ -87,6 +107,10 @@ interface Store {
   objectExists(objectPath: string): Promise<boolean>;
   signedDownload(objectPath: string, seconds: number): Promise<string | null>;
   removeObjects(paths: string[]): Promise<void>;
+  insertIntake(i: NewIntake): Promise<VkmIntake>;
+  findIntake(by: { id?: string; token_hash?: string }): Promise<VkmIntake | null>;
+  updateIntake(id: string, patch: Partial<VkmIntake>): Promise<void>;
+  listIntakes(ids: string[]): Promise<VkmIntake[]>;
 }
 
 // ── Supabase store (production) ─────────────────────────────────────────────
@@ -101,6 +125,8 @@ interface Store {
 //   _meta/codes/<CODE>/<version>.json   -> { id }   newest request per client
 //   _meta/inbox/<id>.json               present while submitted, not collected
 //   _meta/events/<id>/<time>.json       audit trail
+//   _meta/intakes/<id>/<version>.json   general intake links (same versioning)
+//   _meta/itokens/<token_hash>.json     -> { id }   (written once)
 // Listings are never cached, so "newest version" is always found by listing.
 type Rec = VkmRequest & { files: VkmFile[] };
 const META = "_meta";
@@ -252,12 +278,37 @@ function supabaseStore(): Store | null {
     async removeObjects(paths) {
       if (paths.length) await db.storage.from(BUCKET).remove(paths);
     },
+    async insertIntake(i) {
+      const row: VkmIntake = {
+        ...i, id: crypto.randomUUID(), created_at: new Date().toISOString(), failed_attempts: 0, status: "open", submissions: 0,
+      };
+      await putJson(`${META}/intakes/${row.id}/${version()}`, row);
+      await putJson(`${META}/itokens/${row.token_hash}.json`, { id: row.id });
+      return row;
+    },
+    async findIntake(by) {
+      let id = by.id;
+      if (!id && by.token_hash) id = (await getJson<{ id: string }>(`${META}/itokens/${by.token_hash}.json`))?.id;
+      if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return null;
+      const p = await newest(`${META}/intakes/${id}`);
+      return p ? getJson<VkmIntake>(p) : null;
+    },
+    async updateIntake(id, patch) {
+      const p = await newest(`${META}/intakes/${id}`);
+      const cur = p ? await getJson<VkmIntake>(p) : null;
+      if (!cur) throw new Error("intake not found");
+      await putJson(`${META}/intakes/${id}/${version()}`, { ...cur, ...patch, id });
+    },
+    async listIntakes(ids) {
+      const rows = await Promise.all(ids.slice(0, 200).map((id) => this.findIntake({ id })));
+      return rows.filter((r): r is VkmIntake => Boolean(r));
+    },
   };
 }
 
 // ── Local file store (next dev + VKM_DEV_STORE=1 only) ──────────────────────
 const DEV_DIR = path.join(process.cwd(), ".vkm-dev");
-type DevDb = { requests: VkmRequest[]; files: VkmFile[]; events: unknown[] };
+type DevDb = { requests: VkmRequest[]; files: VkmFile[]; events: unknown[]; intakes?: VkmIntake[] };
 
 export function devStoreEnabled() {
   return process.env.NODE_ENV !== "production" && process.env.VKM_DEV_STORE === "1";
@@ -355,6 +406,27 @@ function devStore(): Store {
     async removeObjects(paths) {
       await Promise.all(paths.map((p) => fs.rm(devObjectFile(p), { force: true })));
     },
+    async insertIntake(i) {
+      const d = await devLoad();
+      const row: VkmIntake = {
+        ...i, id: crypto.randomUUID(), created_at: new Date().toISOString(), failed_attempts: 0, status: "open", submissions: 0,
+      };
+      d.intakes = [...(d.intakes ?? []), row];
+      await devSave(d);
+      return row;
+    },
+    async findIntake(by) {
+      const d = await devLoad();
+      return (d.intakes ?? []).find((x) => (by.id ? x.id === by.id : x.token_hash === by.token_hash)) ?? null;
+    },
+    async updateIntake(id, patch) {
+      const d = await devLoad();
+      d.intakes = (d.intakes ?? []).map((x) => (x.id === id ? { ...x, ...patch } : x));
+      await devSave(d);
+    },
+    async listIntakes(ids) {
+      return ((await devLoad()).intakes ?? []).filter((x) => ids.includes(x.id));
+    },
   };
 }
 
@@ -395,6 +467,21 @@ export function pinMatches(pin: string, r: VkmRequest): boolean {
   const a = Buffer.from(hashPin(pin, r.pin_salt).hash, "hex");
   const b = Buffer.from(r.pin_hash, "hex");
   return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+export function intakePinMatches(pin: string, i: VkmIntake): boolean {
+  if (!i.pin_hash || !i.pin_salt) return true;
+  if (!/^\d{6}$/.test(pin)) return false;
+  const a = Buffer.from(hashPin(pin, i.pin_salt).hash, "hex");
+  const b = Buffer.from(i.pin_hash, "hex");
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+export function intakeStatus(i: VkmIntake): "open" | "locked" | "revoked" | "expired" | "full" {
+  if (i.status !== "open") return i.status;
+  if (Date.parse(i.expires_at) < Date.now()) return "expired";
+  if (i.submissions >= i.max_submissions) return "full";
+  return "open";
 }
 
 // ── session cookie (after a correct PIN) ────────────────────────────────────

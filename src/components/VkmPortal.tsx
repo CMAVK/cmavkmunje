@@ -10,10 +10,10 @@ import {
 type DocItem = { key: string; label: string; note?: string };
 type UpFile = { id: string; name: string; size: number; doc_key: string | null };
 type Session = {
-  client_name: string; client_code: string; title: string; documents: DocItem[]; services: string[];
+  client_name: string; client_code: string | null; title: string; documents: DocItem[]; services: string[];
   max_files: number; max_file_mb: number; allowed_ext: string[]; expires_at: string; files: UpFile[];
 };
-type Stage = "loading" | "pin" | "closed" | "work" | "done";
+type Stage = "loading" | "pin" | "intake" | "closed" | "work" | "done";
 
 async function call<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -36,9 +36,12 @@ function fmtDate(s: string) {
 }
 
 // Client side of the secure request: link (token) or client login, PIN,
-// upload, tick services, submit once.
-export default function VkmPortal({ token }: { token?: string }) {
-  const [stage, setStage] = useState<Stage>(token ? "loading" : "pin");
+// upload, tick services, submit once. With intakeToken (general Link Intake
+// link) the visitor first enters their details and gets their own request.
+export default function VkmPortal({ token, intakeToken }: { token?: string; intakeToken?: string }) {
+  const [stage, setStage] = useState<Stage>(token || intakeToken ? "loading" : "pin");
+  const [intake, setIntake] = useState<{ title: string; services: string[]; needs_pin: boolean } | null>(null);
+  const [me, setMe] = useState({ name: "", phone: "", email: "", service: "" });
   const [firstName, setFirstName] = useState("");
   const [closedMsg, setClosedMsg] = useState("");
   const [code, setCode] = useState("");
@@ -66,6 +69,38 @@ export default function VkmPortal({ token }: { token?: string }) {
       else setStage("pin");
     }
   }, []);
+
+  useEffect(() => {
+    if (!intakeToken) return;
+    call<{ status: string; message: string; title: string; services: string[]; needs_pin: boolean }>(
+      "/api/vkm/intake/open", { token: intakeToken })
+      .then((d) => {
+        if (d.status !== "open") { setClosedMsg(d.message); setStage("closed"); return; }
+        setIntake(d);
+        setStage("intake");
+      })
+      .catch((e: Error) => { setClosedMsg(e.message); setStage("closed"); });
+  }, [intakeToken]);
+
+  async function startIntake(e: React.FormEvent) {
+    e.preventDefault();
+    setErr("");
+    if (intake?.needs_pin && !/^\d{6}$/.test(pin)) { setErr("Please enter the 6-digit PIN we gave you."); return; }
+    setBusy(true);
+    try {
+      await call("/api/vkm/intake/start", { token: intakeToken, pin, ...me });
+      setPin("");
+      if (me.service) setServices([me.service]);
+      setPhone(me.phone);
+      await loadSession();
+    } catch (e) {
+      const d = e as Error & { data?: { status?: string } };
+      if (d.data?.status) { setClosedMsg(d.message); setStage("closed"); }
+      else setErr(d.message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   useEffect(() => {
     if (!token) return;
@@ -192,6 +227,50 @@ export default function VkmPortal({ token }: { token?: string }) {
         </div>
       )}
 
+      {stage === "intake" && intake && (
+        <form onSubmit={startIntake} className={card}>
+          <h2 className="text-lg font-semibold text-ink">{intake.title}</h2>
+          <p className="mt-1 text-sm text-muted">Tell us who you are, then upload your documents on the next screen.</p>
+          <label className="mt-5 block">
+            <span className="mb-1 block text-sm font-medium text-ink">Full name</span>
+            <input className={input} value={me.name} onChange={(e) => setMe({ ...me, name: e.target.value })}
+              autoComplete="name" required maxLength={120} />
+          </label>
+          <label className="mt-4 block">
+            <span className="mb-1 block text-sm font-medium text-ink">Mobile number</span>
+            <input className={input} value={me.phone} onChange={(e) => setMe({ ...me, phone: e.target.value })}
+              inputMode="tel" autoComplete="tel" required maxLength={15} placeholder="10-digit mobile" />
+          </label>
+          <label className="mt-4 block">
+            <span className="mb-1 block text-sm font-medium text-ink">Email (optional)</span>
+            <input className={input} type="email" value={me.email} onChange={(e) => setMe({ ...me, email: e.target.value })}
+              autoComplete="email" maxLength={120} />
+          </label>
+          {intake.services.length > 0 && (
+            <label className="mt-4 block">
+              <span className="mb-1 block text-sm font-medium text-ink">Service you need</span>
+              <select className={input} value={me.service} onChange={(e) => setMe({ ...me, service: e.target.value })}>
+                <option value="">Choose (optional)</option>
+                {intake.services.map((sv) => <option key={sv} value={sv}>{sv}</option>)}
+              </select>
+            </label>
+          )}
+          {intake.needs_pin && (
+            <label className="mt-4 block">
+              <span className="mb-1 block text-sm font-medium text-ink">PIN</span>
+              <input className={`${input} tracking-[0.5em]`} value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric" autoComplete="one-time-code" placeholder="••••••" required />
+            </label>
+          )}
+          {err && <p className="mt-3 flex items-start gap-2 text-sm text-red-700"><FaTriangleExclamation className="mt-0.5 shrink-0" />{err}</p>}
+          <button type="submit" className={`${btn} mt-6 w-full`} disabled={busy}>
+            <FaLock /> {busy ? "Please wait…" : "Continue"}
+          </button>
+          <p className="mt-4 text-center text-xs text-muted">Your details are used only by {site.name} to contact you about your work.</p>
+        </form>
+      )}
+
       {stage === "pin" && (
         <form onSubmit={login} className={card}>
           <h2 className="text-lg font-semibold text-ink">
@@ -232,7 +311,7 @@ export default function VkmPortal({ token }: { token?: string }) {
               <div>
                 <p className="text-sm text-muted">{s.title}</p>
                 <h2 className="text-lg font-semibold text-ink">{s.client_name}</h2>
-                <p className="text-xs text-muted">Client ID {s.client_code} · open till {fmtDate(s.expires_at)}</p>
+                <p className="text-xs text-muted">{s.client_code ? `Client ID ${s.client_code} · ` : ""}open till {fmtDate(s.expires_at)}</p>
               </div>
               <button onClick={logout} className="inline-flex items-center gap-1 text-sm text-muted hover:text-teal">
                 <FaRightFromBracket /> Log out

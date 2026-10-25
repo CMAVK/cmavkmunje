@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     out.push({
       id: r.id, client_code: r.client_code, client_name: r.client_name, title: r.title,
       submitted_at: r.submitted_at, services: r.client_services, message: r.client_message,
-      contact: r.client_contact,
+      contact: r.client_contact, intake_id: r.intake_id ?? null,
       files: await Promise.all(files.map(async (f) => ({
         id: f.id, name: f.file_name, size: f.size_bytes, mime: f.mime, doc_key: f.doc_key,
         url: await store.signedDownload(f.storage_path, 600),

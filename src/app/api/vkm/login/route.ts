@@ -25,6 +25,7 @@ export async function POST(req: Request) {
     const code = String(body.client_code).trim().toUpperCase();
     if (!/^[A-Z0-9-]{3,20}$/.test(code)) return noStore({ error: "Client ID or PIN is incorrect." }, { status: 401 });
     r = await store.findRequest({ client_code: code });
+    if (r?.intake_id) r = null; // one-off intake requests have no client login
   }
   // same answer for "no such client" and "wrong PIN" on client login
   if (!r) return noStore({ error: body.token ? "This link is not valid." : "Client ID or PIN is incorrect." },
