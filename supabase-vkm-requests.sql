@@ -61,9 +61,24 @@ alter table public.vkm_requests       enable row level security;
 alter table public.vkm_request_files  enable row level security;
 alter table public.vkm_request_events enable row level security;
 
+-- Newer Supabase projects don't expose new tables to the API automatically.
+-- Only the website's server role gets access; the public anon role gets none.
+grant all on table public.vkm_requests, public.vkm_request_files, public.vkm_request_events to service_role;
+grant usage, select on sequence public.vkm_request_events_id_seq to service_role;
+revoke all on table public.vkm_requests, public.vkm_request_files, public.vkm_request_events from anon, authenticated;
+
 -- Private bucket, 25 MB per file. No storage policies: uploads only work
 -- through one-time signed upload URLs the website hands out after the client
 -- has entered the correct PIN.
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('client-requests', 'client-requests', false, 26214400)
 on conflict (id) do update set public = false, file_size_limit = 26214400;
+
+-- Make the website see the new tables right away
+notify pgrst, 'reload schema';
+
+-- Check: this should show 3 rows, and "leads" should be listed too
+-- (if "leads" is missing, you are in the wrong Supabase project).
+select table_name from information_schema.tables
+where table_schema = 'public' and table_name in ('vkm_requests', 'vkm_request_files', 'vkm_request_events', 'leads')
+order by table_name;
