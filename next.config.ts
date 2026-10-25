@@ -15,7 +15,19 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    // Secure client request pages carry a secret token in the URL: never send
+    // it onward as a Referer, never cache the page, never index it.
+    const privatePage = [
+      { key: "Referrer-Policy", value: "no-referrer" },
+      { key: "Cache-Control", value: "no-store" },
+      { key: "X-Robots-Tag", value: "noindex, nofollow" },
+      { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+    ];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/vkm", headers: privatePage },
+      { source: "/vkm/:path*", headers: privatePage },
+    ];
   },
 };
 

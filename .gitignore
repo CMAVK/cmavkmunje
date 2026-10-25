@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local test store for /vkm requests (VKM_DEV_STORE=1)
+.vkm-dev/
