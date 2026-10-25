@@ -19,3 +19,15 @@ export async function GET(req: Request) {
   const ok = bucket === "ok" && ["vkm_requests", "vkm_request_files", "vkm_request_events"].every((t) => tables[t] === "ok");
   return noStore({ ok, project, tables, bucket });
 }
+
+// Repair: create the private upload bucket if it is missing.
+export async function POST(req: Request) {
+  if (!officeAuthorized(req)) return noStore({ error: "unauthorized" }, { status: 401 });
+  const db = getSupabaseAdmin();
+  if (!db) return noStore({ ok: false, error: "Supabase is not configured on the website" }, { status: 503 });
+  const { data: buckets } = await db.storage.listBuckets();
+  if (buckets?.some((b) => b.id === BUCKET)) return noStore({ ok: true, bucket: "exists" });
+  const { error } = await db.storage.createBucket(BUCKET, { public: false, fileSizeLimit: "25MB" });
+  if (error) return noStore({ ok: false, error: error.message }, { status: 502 });
+  return noStore({ ok: true, bucket: "created" });
+}
