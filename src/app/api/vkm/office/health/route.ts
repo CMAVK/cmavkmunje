@@ -1,27 +1,35 @@
 import { BUCKET, noStore, officeAuthorized } from "@/lib/vkmRequests";
 import { getSupabaseAdmin } from "@/lib/supabaseAdmin";
 
-// Office health check: can the website's server reach the request tables and
-// the private bucket? Used by SmartDocs to explain why links can't be made.
+// Office health check: can the website's server use the private bucket that
+// holds both the uploads and the request records? Used by SmartDocs to
+// explain why links can't be made.
 export async function GET(req: Request) {
   if (!officeAuthorized(req)) return noStore({ error: "unauthorized" }, { status: 401 });
   const db = getSupabaseAdmin();
   if (!db) return noStore({ ok: false, error: "Supabase is not configured on the website" }, { status: 503 });
 
   const project = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/^https:\/\/([a-z0-9]+)\..*$/, "$1");
-  const tables: Record<string, string> = {};
-  for (const t of ["vkm_requests", "vkm_request_files", "vkm_request_events", "leads"]) {
-    // a real GET: HEAD requests don't report "table not found" reliably
-    const { error } = await db.from(t).select("*").limit(1);
-    tables[t] = error ? `${error.code || ""} ${error.message}`.trim() : "ok";
-  }
   const { data: buckets, error: bErr } = await db.storage.listBuckets();
   const bucket = bErr ? `error: ${bErr.message}` : buckets?.some((b) => b.id === BUCKET) ? "ok" : "missing";
-  const ok = bucket === "ok" && ["vkm_requests", "vkm_request_files", "vkm_request_events"].every((t) => tables[t] === "ok");
-  return noStore({ ok, project, tables, bucket });
+
+  let records = "not checked";
+  if (bucket === "ok") {
+    const stamp = new Date().toISOString();
+    const probe = "_meta/health.json";
+    const { error: wErr } = await db.storage.from(BUCKET).upload(probe,
+      new Blob([JSON.stringify({ stamp })], { type: "application/json" }), { upsert: true, cacheControl: "0" });
+    if (wErr) records = `write failed: ${wErr.message}`;
+    else {
+      const { data, error: rErr } = await db.storage.from(BUCKET).download(probe);
+      const back = data ? JSON.parse(await data.text()).stamp : null;
+      records = rErr ? `read failed: ${rErr.message}` : back === stamp ? "ok" : "stale read";
+    }
+  }
+  return noStore({ ok: bucket === "ok" && records === "ok", project, bucket, records });
 }
 
-// Repair: create the private upload bucket if it is missing.
+// Repair: create the private bucket if it is missing.
 export async function POST(req: Request) {
   if (!officeAuthorized(req)) return noStore({ error: "unauthorized" }, { status: 401 });
   const db = getSupabaseAdmin();

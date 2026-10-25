@@ -90,63 +90,123 @@ interface Store {
 }
 
 // ── Supabase store (production) ─────────────────────────────────────────────
+// Request records are small private JSON files in the same private bucket as
+// the uploads (under _meta/), read and written only with the service-role
+// key. This avoids depending on Supabase's Data API exposing new tables.
+//   _meta/requests/<id>.json      the request + its files
+//   _meta/tokens/<token_hash>.json -> { id }
+//   _meta/codes/<CLIENT_CODE>.json -> { id } of the newest request
+//   _meta/inbox/<id>.json          present while submitted and not yet collected
+//   _meta/events/<id>/<time>.json  audit trail
+type Rec = VkmRequest & { files: VkmFile[] };
+const META = "_meta";
+
 function supabaseStore(): Store | null {
   const db = getSupabaseAdmin();
   if (!db) return null;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-  const check = (error: { message: string } | null) => {
+  const bucket = () => db.storage.from(BUCKET);
+
+  async function getJson<T>(p: string): Promise<T | null> {
+    const { data, error } = await bucket().download(p);
+    if (error || !data) return null;
+    try {
+      return JSON.parse(await data.text()) as T;
+    } catch {
+      return null;
+    }
+  }
+  async function putJson(p: string, v: unknown) {
+    const { error } = await bucket().upload(p, new Blob([JSON.stringify(v)], { type: "application/json" }),
+      { upsert: true, cacheControl: "0", contentType: "application/json" });
     if (error) throw new Error(error.message);
+  }
+  const recPath = (id: string) => `${META}/requests/${id}.json`;
+  const loadRec = (id: string) => (/^[0-9a-f-]{36}$/i.test(id) ? getJson<Rec>(recPath(id)) : Promise.resolve(null));
+  const strip = (r: Rec): VkmRequest => {
+    const { files: _files, ...rest } = r; // eslint-disable-line @typescript-eslint/no-unused-vars
+    return rest;
   };
+  async function syncInbox(r: Rec) {
+    const marker = `${META}/inbox/${r.id}.json`;
+    if (r.status === "submitted" && !r.synced_at) await putJson(marker, { id: r.id });
+    else await bucket().remove([marker]);
+  }
+  // file ids carry their request id so a file can be found from its id alone
+  const reqOfFile = (fileId: string) => fileId.split(".")[0];
+
   return {
     async insertRequest(r) {
-      const { data, error } = await db.from("vkm_requests").insert(r).select("*").single();
-      check(error);
-      return data as VkmRequest;
+      const rec: Rec = {
+        ...r, id: crypto.randomUUID(), created_at: new Date().toISOString(), failed_attempts: 0,
+        status: "open", submitted_at: null, client_services: [], client_message: null, client_contact: {},
+        synced_at: null, files: [],
+      };
+      await putJson(recPath(rec.id), rec);
+      await putJson(`${META}/tokens/${rec.token_hash}.json`, { id: rec.id });
+      await putJson(`${META}/codes/${rec.client_code.toUpperCase()}.json`, { id: rec.id });
+      return strip(rec);
     },
     async findRequest(by) {
-      let q = db.from("vkm_requests").select("*");
-      if (by.id) q = q.eq("id", by.id);
-      else if (by.token_hash) q = q.eq("token_hash", by.token_hash);
-      else if (by.client_code) q = q.ilike("client_code", by.client_code).order("created_at", { ascending: false });
-      else return null;
-      const { data, error } = await q.limit(1);
-      check(error);
-      return (data?.[0] as VkmRequest) ?? null;
+      let id = by.id;
+      if (!id && by.token_hash) id = (await getJson<{ id: string }>(`${META}/tokens/${by.token_hash}.json`))?.id;
+      if (!id && by.client_code) {
+        id = (await getJson<{ id: string }>(`${META}/codes/${by.client_code.toUpperCase()}.json`))?.id;
+      }
+      const rec = id ? await loadRec(id) : null;
+      return rec ? strip(rec) : null;
     },
     async updateRequest(id, patch) {
-      const { error } = await db.from("vkm_requests").update(patch).eq("id", id);
-      check(error);
+      const rec = await loadRec(id);
+      if (!rec) throw new Error("request not found");
+      const next = { ...rec, ...patch, id: rec.id } as Rec;
+      await putJson(recPath(id), next);
+      if ("status" in patch || "synced_at" in patch) await syncInbox(next);
     },
     async listRequests(f) {
-      let q = db.from("vkm_requests").select("*").order("created_at", { ascending: true }).limit(200);
-      if (f.submittedUnsynced) q = q.eq("status", "submitted").is("synced_at", null);
-      if (f.ids) q = q.in("id", f.ids.length ? f.ids : ["00000000-0000-0000-0000-000000000000"]);
-      const { data, error } = await q;
-      check(error);
-      return (data as VkmRequest[]) ?? [];
+      let ids = f.ids ?? [];
+      if (f.submittedUnsynced) {
+        const { data } = await bucket().list(`${META}/inbox`, { limit: 1000 });
+        ids = (data ?? []).map((o) => o.name.replace(/\.json$/, ""));
+      }
+      const recs = await Promise.all(ids.slice(0, 200).map(loadRec));
+      return recs.filter((r): r is Rec => Boolean(r))
+        .filter((r) => !f.submittedUnsynced || (r.status === "submitted" && !r.synced_at))
+        .sort((a, b) => a.created_at.localeCompare(b.created_at)).map(strip);
     },
     async insertFile(f) {
-      const { data, error } = await db.from("vkm_request_files").insert(f).select("*").single();
-      check(error);
-      return data as VkmFile;
+      const rec = await loadRec(f.request_id);
+      if (!rec) throw new Error("request not found");
+      const file: VkmFile = {
+        ...f, id: `${rec.id}.${crypto.randomUUID()}`, uploaded_at: new Date().toISOString(), synced_at: null, confirmed: false,
+      };
+      rec.files = [...(rec.files || []), file];
+      await putJson(recPath(rec.id), rec);
+      return file;
     },
     async listFiles(requestId) {
-      const { data, error } = await db.from("vkm_request_files").select("*")
-        .eq("request_id", requestId).order("uploaded_at", { ascending: true });
-      check(error);
-      return (data as VkmFile[]) ?? [];
+      return (await loadRec(requestId))?.files ?? [];
     },
     async updateFile(id, patch) {
-      const { error } = await db.from("vkm_request_files").update(patch).eq("id", id);
-      check(error);
+      const rec = await loadRec(reqOfFile(id));
+      if (!rec) return;
+      rec.files = rec.files.map((x) => (x.id === id ? { ...x, ...patch, id } : x));
+      await putJson(recPath(rec.id), rec);
     },
     async deleteFiles(ids) {
-      if (!ids.length) return;
-      const { error } = await db.from("vkm_request_files").delete().in("id", ids);
-      check(error);
+      const byReq = new Map<string, Set<string>>();
+      ids.forEach((i) => byReq.set(reqOfFile(i), (byReq.get(reqOfFile(i)) ?? new Set()).add(i)));
+      for (const [rid, drop] of byReq) {
+        const rec = await loadRec(rid);
+        if (!rec) continue;
+        rec.files = rec.files.filter((x) => !drop.has(x.id));
+        await putJson(recPath(rid), rec);
+      }
     },
     async addEvent(requestId, event, ip, ua) {
-      await db.from("vkm_request_events").insert({ request_id: requestId, event, ip, ua: ua.slice(0, 300) });
+      const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+      await putJson(`${META}/events/${requestId ?? "none"}/${stamp}-${crypto.randomBytes(3).toString("hex")}.json`,
+        { event, ip, ua: ua.slice(0, 300), at: new Date().toISOString() }).catch(() => undefined);
     },
     async signedUpload(objectPath, mime) {
       const { data, error } = await db.storage.from(BUCKET).createSignedUploadUrl(objectPath);
